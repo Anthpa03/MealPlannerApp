@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/imageView_bg"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:cropToPadding="false"
+        android:scaleType="fitStart"
+        android:scaleX="1"
+        android:scaleY="1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/bg_" />
+
+    <TextView
+        android:id="@+id/TextView_Title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="240dp"
+        android:fontFamily="serif"
+        android:text="The Meal Planner"
+        android:textColor="#000000"
+        android:textSize="30sp"
+        app:layout_constraintBottom_toBottomOf="@+id/imageView_bg"
+        app:layout_constraintEnd_toEndOf="@+id/imageView_bg"
+        app:layout_constraintStart_toStartOf="@+id/imageView_bg"
+        app:layout_constraintTop_toTopOf="@+id/imageView_bg" />
+
+    <TextView
+        android:id="@+id/textView_signup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="200dp"
+        android:text="Create your new account"
+        app:layout_constraintBottom_toTopOf="@+id/editTextText_email"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageView_bg" />
+
+    <EditText
+        android:id="@+id/editTextText_email"
+        android:layout_width="261dp"
+        android:layout_height="58dp"
+        android:layout_marginTop="40dp"
+        android:layout_marginEnd="95dp"
+        android:ems="10"
+        android:hint="Email"
+        android:inputType="text"
+        android:padding="48px"
+        app:layout_constraintBottom_toTopOf="@+id/editTextText_password"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageView_bg" />
+
+    <EditText
+        android:id="@+id/editTextText_password"
+        android:layout_width="261dp"
+        android:layout_height="58dp"
+        android:layout_marginTop="80dp"
+        android:layout_marginEnd="95dp"
+        android:ems="10"
+        android:hint="Password"
+        android:inputType="text"
+        android:padding="48px"
+        app:layout_constraintBottom_toTopOf="@+id/button_signup"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.509"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageView_bg"
+        app:layout_constraintVertical_bias="0.32" />
+
+    <EditText
+        android:id="@+id/editTextText_password2"
+        android:layout_width="261dp"
+        android:layout_height="58dp"
+        android:layout_marginTop="80dp"
+        android:layout_marginEnd="95dp"
+        android:ems="10"
+        android:hint="Repeat Password"
+        android:inputType="text"
+        android:padding="48px"
+        app:layout_constraintBottom_toTopOf="@+id/button_signup"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.509"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageView_bg"
+        app:layout_constraintVertical_bias="0.89" />
+
+    <TextView
+        android:id="@+id/textView_signIn"
+        android:layout_width="232dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="200dp"
+        android:text="@string/sign_in"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageView_bg"
+        app:layout_constraintVertical_bias="0.838" />
+
+    <Button
+        android:id="@+id/button_signup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="210dp"
+        android:width="650px"
+        android:height="140px"
+        android:backgroundTint="#feaf66"
+        android:text="Sign Up"
+        android:textColor="#000000"
+        android:textColorHighlight="#FEAF66"
+        android:textColorLink="#FEAF66"
+        app:iconPadding="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/textView_signIn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageView_bg"
+        app:layout_constraintVertical_bias="0.76" />
+
+    <TextView
+        android:id="@+id/textView_clickable1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="220dp"
+        android:layout_marginEnd="80dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:onClick="signInText"
+        android:padding="48px"
+        android:text="@string/clickable"
+        android:textColor="#57a0d4"
+        app:layout_constraintBottom_toBottomOf="@+id/textView_signIn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.52"
+        app:layout_constraintStart_toEndOf="@+id/textView_signIn"
+        app:layout_constraintStart_toStartOf="@+id/textView_signIn"
+        app:layout_constraintTop_toTopOf="@+id/textView_signIn"
+        app:layout_constraintVertical_bias="0.52" />
+</androidx.constraintlayout.widget.ConstraintLayout>

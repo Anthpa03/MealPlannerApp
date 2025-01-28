@@ -1,0 +1,12 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.MealPlannerApp" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your light theme here. -->
+        <item name="colorPrimary">@color/orange</item>
+        <item name="colorPrimaryVariant">@color/darkRed</item>
+        <item name="colorAccent">@color/reddishOrange</item>
+        <item name="android:statusBarColor">@color/reddishOrange</item>
+        <item name="android:navigationBarColor">@color/orange</item>
+    </style>
+    <style name="Theme.MealPlannerApp" parent="Base.Theme.MealPlannerApp" />
+</resources>
