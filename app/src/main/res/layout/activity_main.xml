@@ -42,13 +42,13 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="220dp"
         android:text="Login to your account"
-        app:layout_constraintBottom_toTopOf="@+id/editTextText_email"
+        app:layout_constraintBottom_toTopOf="@+id/editText_email_signin"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageView_bg" />
 
     <EditText
-        android:id="@+id/editTextText_email"
+        android:id="@+id/editText_email_signin"
         android:layout_width="261dp"
         android:layout_height="58dp"
         android:layout_marginTop="40dp"
@@ -57,13 +57,13 @@
         android:hint="Email"
         android:inputType="text"
         android:padding="48px"
-        app:layout_constraintBottom_toTopOf="@+id/editTextText_password"
+        app:layout_constraintBottom_toTopOf="@+id/editText_password_signin"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageView_bg" />
 
     <EditText
-        android:id="@+id/editTextText_password"
+        android:id="@+id/editText_password_signin"
         android:layout_width="261dp"
         android:layout_height="58dp"
         android:layout_marginTop="80dp"
@@ -72,7 +72,6 @@
         android:hint="Password"
         android:inputType="text"
         android:padding="48px"
-        app:layout_constraintBottom_toTopOf="@+id/button_signup"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageView_bg" />
@@ -89,7 +88,7 @@
         app:layout_constraintTop_toBottomOf="@+id/imageView_bg" />
 
     <Button
-        android:id="@+id/button_signup"
+        android:id="@+id/button_signin"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="200dp"
@@ -107,7 +106,7 @@
         app:layout_constraintTop_toBottomOf="@+id/imageView_bg" />
 
     <TextView
-        android:id="@+id/textView_clickable1"
+        android:id="@+id/textView_signup_sheet"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="220dp"

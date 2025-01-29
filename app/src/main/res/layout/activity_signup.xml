@@ -40,13 +40,12 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="200dp"
         android:text="Create your new account"
-        app:layout_constraintBottom_toTopOf="@+id/editTextText_email"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageView_bg" />
 
     <EditText
-        android:id="@+id/editTextText_email"
+        android:id="@+id/editText_email_signup"
         android:layout_width="261dp"
         android:layout_height="58dp"
         android:layout_marginTop="40dp"
@@ -55,13 +54,12 @@
         android:hint="Email"
         android:inputType="text"
         android:padding="48px"
-        app:layout_constraintBottom_toTopOf="@+id/editTextText_password"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageView_bg" />
 
     <EditText
-        android:id="@+id/editTextText_password"
+        android:id="@+id/editText_password_signup"
         android:layout_width="261dp"
         android:layout_height="58dp"
         android:layout_marginTop="80dp"
@@ -75,10 +73,10 @@
         app:layout_constraintHorizontal_bias="0.509"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageView_bg"
-        app:layout_constraintVertical_bias="0.32" />
+        app:layout_constraintVertical_bias="0.17000002" />
 
     <EditText
-        android:id="@+id/editTextText_password2"
+        android:id="@+id/editText_password_retype"
         android:layout_width="261dp"
         android:layout_height="58dp"
         android:layout_marginTop="80dp"
@@ -92,7 +90,7 @@
         app:layout_constraintHorizontal_bias="0.509"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageView_bg"
-        app:layout_constraintVertical_bias="0.89" />
+        app:layout_constraintVertical_bias="0.72" />
 
     <TextView
         android:id="@+id/textView_signIn"
@@ -127,7 +125,7 @@
         app:layout_constraintVertical_bias="0.76" />
 
     <TextView
-        android:id="@+id/textView_clickable1"
+        android:id="@+id/textView_signup_sheet"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="220dp"
