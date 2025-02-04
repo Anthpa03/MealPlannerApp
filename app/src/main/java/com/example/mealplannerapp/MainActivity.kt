@@ -30,7 +30,7 @@ class MainActivity : AppCompatActivity() {
         }
         binding.textViewSignupSheet.setOnClickListener{
             val changePage = Intent(this@MainActivity, SignUpSheet::class.java)
-            startActivity(changePage);
+            startActivity(changePage)
         }
     }
 }

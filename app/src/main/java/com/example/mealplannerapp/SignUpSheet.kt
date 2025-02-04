@@ -29,7 +29,7 @@ class SignUpSheet : AppCompatActivity(){
         }
         binding.textViewSignupSheet.setOnClickListener{
             val changePage = Intent(this@SignUpSheet, MainActivity::class.java)
-            startActivity(changePage);
+            startActivity(changePage)
         }
     }
 }
