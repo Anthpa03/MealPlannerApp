@@ -56,8 +56,27 @@ class HomeViewModel @Inject constructor(
     }
     fun deleteUser(){
         viewModelScope.launch{
-            (objectId)
-            // TODO: Yet to be implemented
+            if(objectId.value.isNotEmpty()){
+                repository.deleteUser(id = ObjectId(hexString = objectId.value))
+            }
+        }
+    }
+    fun filterData(){
+        viewModelScope.launch(Dispatchers.IO){
+            if(filtered.value){
+                repository.getData().collect{
+                    filtered.value=false
+                    name.value=""
+                    data.value=it
+                }
+
+            }
+            else{
+                repository.filterData(name = name.value).collect{
+                    filtered.value=true
+                    data.value=it
+                }
+            }
         }
     }
 }

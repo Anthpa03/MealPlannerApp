@@ -1,11 +1,12 @@
 package com.example.mealplannerapp
 
+
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.annotations.Index
 import io.realm.kotlin.types.annotations.PrimaryKey
 import org.mongodb.kbson.ObjectId
 
-class User: RealmObject{
+class User: RealmObject {
     @PrimaryKey
     var _id: ObjectId= ObjectId.invoke()
     var Username: String=""
