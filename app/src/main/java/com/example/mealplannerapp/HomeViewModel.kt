@@ -11,13 +11,13 @@ import org.mongodb.kbson.ObjectId
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeViewModel @Inject constructor(
-    private val repository:MongoRepository
-):ViewModel(){
-    var name= mutableStateOf("")
-    var objectId = mutableStateOf("")
-    var filtered= mutableStateOf(false)
-    var data= mutableStateOf(emptyList<User>())
+class HomeViewModel @Inject constructor(private val repository:MongoRepository):ViewModel(){
+    private var name = mutableStateOf("")
+    private var password = mutableStateOf("")
+    private var objectId = mutableStateOf("")
+    private var filtered = mutableStateOf(false)
+    var errorMessage = mutableStateOf("")
+    private var data = mutableStateOf(emptyList<User>())
 
     init{
         viewModelScope.launch {
@@ -27,21 +27,24 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun updatename (name:String)
+    fun updateName (name:String)
     {
         this.name.value=name
     }
+    fun updatePassword(password: String) {
+        this.password.value = password
+    }
     fun updateObjectId(id:String)
     {
-    this.objectId.value=id
+        this.objectId.value=id
     }
     fun insertUser(){
         viewModelScope.launch(Dispatchers.IO){
             if (name.value.isNotEmpty()){
                 repository.insertUser(user = User().apply {
-                    Username = this@HomeViewModel.name.value})
+                    Username = this@HomeViewModel.name.value
+                    Password = this@HomeViewModel.password.value})
             }
-
         }
     }
     fun updateUser(){
@@ -50,7 +53,7 @@ class HomeViewModel @Inject constructor(
                 repository.updateUser(user = User().apply {
                     _id = ObjectId(hexString = this@HomeViewModel.objectId.value)
                     Username = this@HomeViewModel.name.value
-                })
+                    Password = this@HomeViewModel.password.value})
             }
         }
     }
@@ -76,6 +79,14 @@ class HomeViewModel @Inject constructor(
                     filtered.value=true
                     data.value=it
                 }
+            }
+        }
+    }
+    fun authenticateUser() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val user = repository.authenticateUser(name.value, password.value)
+            if (user == null) {
+                errorMessage.value = "Invalid username or password"
             }
         }
     }

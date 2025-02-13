@@ -6,6 +6,8 @@ import io.realm.kotlin.ext.query
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import org.mongodb.kbson.ObjectId
+import java.nio.charset.StandardCharsets
+import java.security.MessageDigest
 
 class MongoRepositoryImpl(val realm: Realm):MongoRepository {
     override fun getData(): Flow<List<User>> {
@@ -17,12 +19,19 @@ class MongoRepositoryImpl(val realm: Realm):MongoRepository {
     }
 
     override suspend fun insertUser(user: User) {
-        realm.write { copyToRealm(user) }
+        val hashedPassword = hashPassword(user.Password) // Hashes password before inserting it into db
+        realm.write { copyToRealm(user.apply { Password = hashedPassword })
+        }
     }
 
     override suspend fun updateUser(user: User) {
         realm.write {val queriedUser=query<User>(query="_id==$0",user._id).first().find()
-        queriedUser?.Username=user.Username
+            queriedUser?.let {
+                it.Username = user.Username
+                if (user.Password.isNotEmpty()) { // Hash and update password if provided
+                    it.Password = hashPassword(user.Password)
+                }
+            }
         }
     }
 
@@ -37,4 +46,15 @@ class MongoRepositoryImpl(val realm: Realm):MongoRepository {
         }
     }
 
+    private fun hashPassword(password: String): String {
+        val digest = MessageDigest.getInstance("SHA-256")
+        val encodedHash = digest.digest(password.toByteArray(StandardCharsets.UTF_8))
+        return encodedHash.joinToString("") { String.format("%02x", it) }
+    }
+
+    override suspend fun authenticateUser(username: String, password: String): User? {
+        return realm.query<User>("Username == $0 AND Password == $1", username, password)
+            .first()
+            .find()
+    }
 }

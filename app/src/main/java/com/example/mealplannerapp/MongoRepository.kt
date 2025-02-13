@@ -10,5 +10,5 @@ interface MongoRepository {
     suspend fun insertUser(user: User)
     suspend fun updateUser(user: User)
     suspend fun deleteUser(id: ObjectId)
-    
+    suspend fun authenticateUser(username: String, password: String): User?
 }
