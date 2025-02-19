@@ -53,8 +53,11 @@ class MongoRepositoryImpl(val realm: Realm):MongoRepository {
     }
 
     override suspend fun authenticateUser(username: String, password: String): User? {
-        return realm.query<User>("Username == $0 AND Password == $1", username, password)
+        val hashedPassword = hashPassword(password)
+        Log.d("AuthDebug", "Attempting to authenticate user: $username with password: $hashedPassword")
+        return realm.query<User>("Username == $0 AND Password == $1", username, hashedPassword)
             .first()
             .find()
     }
+
 }

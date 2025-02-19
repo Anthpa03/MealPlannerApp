@@ -1,5 +1,6 @@
 package com.example.mealplannerapp
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -7,6 +8,8 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.mongodb.kbson.ObjectId
 import javax.inject.Inject
 
@@ -16,7 +19,6 @@ class HomeViewModel @Inject constructor(private val repository:MongoRepository):
     private var password = mutableStateOf("")
     private var objectId = mutableStateOf("")
     private var filtered = mutableStateOf(false)
-    var errorMessage = mutableStateOf("")
     private var data = mutableStateOf(emptyList<User>())
 
     init{
@@ -26,7 +28,6 @@ class HomeViewModel @Inject constructor(private val repository:MongoRepository):
             }
         }
     }
-
     fun updateName (name:String)
     {
         this.name.value=name
@@ -82,12 +83,14 @@ class HomeViewModel @Inject constructor(private val repository:MongoRepository):
             }
         }
     }
-    fun authenticateUser() {
-        viewModelScope.launch(Dispatchers.IO) {
-            val user = repository.authenticateUser(name.value, password.value)
-            if (user == null) {
-                errorMessage.value = "Invalid username or password"
-            }
+    suspend fun authenticateUser(): Boolean {
+        return withContext(Dispatchers.IO) {
+            val username = name.value ?: ""
+            val pass = password.value ?: ""
+            val user = repository.authenticateUser(username, pass)
+            val isAuthenticated = user != null
+            Log.d("AuthDebug", "Authentication result: $isAuthenticated")
+            isAuthenticated
         }
     }
 }

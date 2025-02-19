@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".HomeFragment">
+
+    <ImageView
+        android:id="@+id/imageView_bg_home"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:cropToPadding="false"
+        android:scaleType="fitStart"
+        android:scaleX="1"
+        android:scaleY="1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/bg_" />
+
+    <TextView
+        android:id="@+id/textView_welcome"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="20dp"
+        android:text="Hello,"
+        android:textAlignment="textStart"
+        android:textColor="#000000"
+        android:textSize="30sp"
+        android:translationY="50dp" />
+
+    <TextView
+        android:id="@+id/textView_username"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="20dp"
+        android:text="Username"
+        android:textAlignment="textStart"
+        android:textColor="#000000"
+        android:textSize="30sp"
+        android:translationY="90dp" />
+
+    <EditText
+        android:id="@+id/editText_search"
+        style="@style/Widget.Material3.TextInputEditText.FilledBox"
+        android:layout_width="366dp"
+        android:layout_height="58dp"
+        android:layout_marginTop="40dp"
+        android:layout_marginEnd="95dp"
+        android:background="@drawable/rounded_edittext"
+        android:ems="10"
+        android:hint="Search up a recipe"
+        android:inputType="text"
+        android:padding="48px"
+        android:textColor="#000000"
+        android:translationX="20dp"
+        android:translationY="250dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.509"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageView_bg" />
+
+</FrameLayout>

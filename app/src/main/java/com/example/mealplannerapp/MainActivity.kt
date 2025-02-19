@@ -5,8 +5,11 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.example.mealplannerapp.databinding.ActivityMainBinding
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -27,23 +30,27 @@ class MainActivity : AppCompatActivity() {
 
     private fun initUI() {
         binding.buttonSignin.setOnClickListener {
-            // Accessing user inputs
             val getUsername = binding.editTextUsernameSignin.text.toString()
             val getUserPassword = binding.editTextPasswordSignin.text.toString()
 
-            homeViewModel.updateName(getUsername)
-            homeViewModel.updatePassword(getUserPassword)
-            homeViewModel.authenticateUser()
-
-            if (homeViewModel.errorMessage.value.isNotEmpty()) {
-                // Show an error message
-                Toast.makeText(this, homeViewModel.errorMessage.value, Toast.LENGTH_LONG).show()
-            } else {
-                Toast.makeText(this, "Login Successful!", Toast.LENGTH_LONG).show()
-                //TODO: Implement home page transition
-                //val intent = Intent(this@MainActivity, HomeActivity::class.java)
-                //startActivity(intent)
-                //finish()
+            // Launch authentication in a coroutine
+            lifecycleScope.launch(Dispatchers.Main) {
+                homeViewModel.updateName(getUsername)
+                homeViewModel.updatePassword(getUserPassword)
+                val isAuthenticated = homeViewModel.authenticateUser()
+                if (!isAuthenticated) {
+                    Toast.makeText(this@MainActivity, "Username or Password is invalid. Please try again.", Toast.LENGTH_LONG).show()
+                } else {
+                    SharedPreferencesManager.saveUserCredentials(
+                        this@MainActivity,
+                        getUsername,
+                        getUserPassword
+                    )
+                    Toast.makeText(this@MainActivity, "Login Successful!", Toast.LENGTH_LONG).show()
+                    val intent = Intent(this@MainActivity, HomeActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                }
             }
         }
         binding.textViewSignupSheet.setOnClickListener{

@@ -3,4 +3,6 @@
     <string name="sign_up">Don\'t have an account? Sign up  </string>
     <string name="sign_in">Already have an account? Sign in  </string>
     <string name="clickable"><u>Here</u>.</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
