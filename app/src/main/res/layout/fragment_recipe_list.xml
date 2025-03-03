@@ -1,0 +1,92 @@
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".RecipeListFragment">
+
+    <EditText
+        android:id="@+id/editText_search"
+        style="@style/Widget.Material3.TextInputEditText.FilledBox"
+        android:layout_width="0dp"
+        android:layout_height="58dp"
+        android:background="@drawable/rounded_edittext"
+        android:backgroundTint="#C0C0C3"
+        android:ems="10"
+        android:hint="Search up a recipe"
+        android:inputType="text"
+        android:padding="48px"
+        android:paddingStart="60dp"
+        android:layout_marginTop="70dp"
+        android:layout_marginBottom="10dp"
+        android:textColor="#000000"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_percent="0.9" />
+
+    <ImageButton
+        android:id="@+id/imageButton_search"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="240dp"
+        android:background="@drawable/green_circle"
+        android:contentDescription="Search"
+        android:scaleType="centerInside"
+        android:src="@drawable/search"
+        app:layout_constraintBottom_toBottomOf="@+id/editText_search"
+        app:layout_constraintEnd_toEndOf="@+id/editText_search"
+        app:layout_constraintStart_toEndOf="@+id/imageButton_filter"
+        app:layout_constraintTop_toTopOf="@+id/editText_search" />
+
+    <ImageButton
+        android:id="@+id/imageButton_filter"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="8dp"
+        android:background="@drawable/filter"
+        android:contentDescription="Filter"
+        app:layout_constraintBottom_toBottomOf="@+id/editText_search"
+        app:layout_constraintStart_toStartOf="@+id/editText_search"
+        app:layout_constraintTop_toTopOf="@+id/editText_search" />
+
+    <TextView
+        android:id="@+id/textView_results"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Showing top results"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/recyclerView_recipes"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.03"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageButton_filter"
+        app:layout_constraintVertical_bias="0.63" />
+
+    <ImageButton
+        android:id="@+id/imageButton_sort"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="#FFFFFF"
+        android:contentDescription="Sort Button"
+        app:layout_constraintBottom_toTopOf="@+id/recyclerView_recipes"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.9"
+        app:layout_constraintStart_toEndOf="@+id/textView_results"
+        app:layout_constraintTop_toBottomOf="@+id/imageButton_search"
+        app:layout_constraintVertical_bias="1.0"
+        android:src="@drawable/sort"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView_recipes"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="50dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintTop_toBottomOf="@id/editText_search"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

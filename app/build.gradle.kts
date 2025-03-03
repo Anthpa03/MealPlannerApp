@@ -51,6 +51,7 @@ dependencies {
 
     // Dagger Core
     implementation ("com.google.dagger:dagger:2.55")
+    implementation("androidx.navigation:navigation-fragment:2.8.7")
     kapt ("com.google.dagger:dagger-compiler:2.55")
 
 // Dagger Android
@@ -65,6 +66,7 @@ dependencies {
 
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.appcompat:appcompat:1.7.0")
+    implementation ("com.github.bumptech.glide:glide:4.16.0")
     implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.constraintlayout:constraintlayout:2.2.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
