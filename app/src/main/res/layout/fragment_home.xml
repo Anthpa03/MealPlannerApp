@@ -85,6 +85,7 @@
         android:layout_height="48dp"
         android:layout_marginStart="8dp"
         android:background="@drawable/filter"
+        android:backgroundTint="#3A3A3A"
         android:contentDescription="Filter"
         app:layout_constraintBottom_toBottomOf="@+id/editText_search"
         app:layout_constraintStart_toStartOf="@+id/editText_search"

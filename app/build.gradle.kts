@@ -52,27 +52,27 @@ dependencies {
     // Dagger Core
     implementation ("com.google.dagger:dagger:2.55")
     implementation("androidx.navigation:navigation-fragment:2.8.7")
-    kapt ("com.google.dagger:dagger-compiler:2.55")
+    kapt("com.google.dagger:dagger-compiler:2.55")
 
 // Dagger Android
-    api ("com.google.dagger:dagger-android:2.55")
+    api("com.google.dagger:dagger-android:2.55")
     api("com.google.dagger:dagger-android-support:2.55")
-    kapt ("com.google.dagger:dagger-android-processor:2.55")
+    kapt("com.google.dagger:dagger-android-processor:2.55")
 
 // Dagger - Hilt
-    implementation ("com.google.dagger:hilt-android:2.55")
-    kapt ("com.google.dagger:hilt-android-compiler:2.55")
-    implementation ("androidx.hilt:hilt-navigation-compose:1.2.0")
-
+    implementation("com.google.dagger:hilt-android:2.55")
+    kapt("com.google.dagger:hilt-android-compiler:2.55")
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+    
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.appcompat:appcompat:1.7.0")
-    implementation ("com.github.bumptech.glide:glide:4.16.0")
+    implementation("com.github.bumptech.glide:glide:4.16.0")
     implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.constraintlayout:constraintlayout:2.2.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    implementation ("androidx.fragment:fragment-ktx:1.5.5")
-    implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1")
+    implementation("androidx.fragment:fragment-ktx:1.5.5")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1")
 }

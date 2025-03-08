@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <CheckBox
+        android:id="@+id/milkCheckBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:layout_marginEnd="85dp"
+        android:text="Milk"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/eggsCheckBox" />
+
+    <CheckBox
+        android:id="@+id/fishCheckBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="50dp"
+        android:layout_marginTop="15dp"
+        android:text="Fish"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/peanutsCheckBox" />
+
+    <ImageButton
+        android:id="@+id/imageButton_exit"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="48dp"
+        android:background="#00FFFFFF"
+        android:contentDescription="Exit"
+        android:scaleType="fitCenter"
+        android:src="@drawable/cross"
+        app:layout_constraintEnd_toStartOf="@+id/textView_filter_title"
+        app:layout_constraintHorizontal_bias="0.426"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="@color/darkRed" />
+
+    <TextView
+        android:id="@+id/textView_filter_title"
+        android:layout_width="110dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="48dp"
+        android:layout_marginEnd="192dp"
+        android:text="Filters"
+        android:textAlignment="viewEnd"
+        android:textColor="#000000"
+        android:textSize="34sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/textView_diet"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <TextView
+        android:id="@+id/textView_diet"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:text="Filter by Diet"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.08"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageButton_exit" />
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/chipGroup"
+        android:layout_width="362dp"
+        android:layout_height="61dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView_diet">
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_vegetarian"
+            style="@style/Widget.Material3.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Vegetarian"
+            android:textSize="15sp"
+            app:chipBackgroundColor="@color/chip_state_list"
+            app:chipCornerRadius="30dp"
+            app:chipStrokeColor="@color/dullRed"
+            app:chipStrokeWidth="2dp"
+            app:rippleColor="#33AAAAAA" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_vegan"
+            style="@style/Widget.Material3.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Vegan"
+            android:textSize="15sp"
+            app:chipBackgroundColor="@color/chip_state_list"
+            app:chipCornerRadius="30dp"
+            app:chipStrokeColor="@color/dullRed"
+            app:chipStrokeWidth="2dp"
+            app:rippleColor="#33AAAAAA" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_gluten"
+            style="@style/Widget.Material3.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Gluten-Free"
+            android:textSize="15sp"
+            app:chipBackgroundColor="@color/chip_state_list"
+            app:chipCornerRadius="30dp"
+            app:chipStrokeColor="@color/dullRed"
+            app:chipStrokeWidth="2dp"
+            app:rippleColor="#33AAAAAA" />
+    </com.google.android.material.chip.ChipGroup>
+
+    <TextView
+        android:id="@+id/textView_allergies"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="Filter by Food Allergies"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.09"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/chipGroup" />
+
+    <CheckBox
+        android:id="@+id/wheatCheckBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="50dp"
+        android:layout_marginTop="20dp"
+        android:text="Wheat"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView_allergies" />
+
+    <CheckBox
+        android:id="@+id/peanutsCheckBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="50dp"
+        android:layout_marginTop="15dp"
+        android:text="Peanuts"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/wheatCheckBox" />
+
+    <CheckBox
+        android:id="@+id/shellfishCheckBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="58dp"
+        android:text="Shellfish"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/milkCheckBox" />
+
+    <CheckBox
+        android:id="@+id/eggsCheckBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="80dp"
+        android:text="Eggs"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView_allergies" />
+
+    <CheckBox
+        android:id="@+id/sesameCheckBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="50dp"
+        android:layout_marginTop="15dp"
+        android:text="Sesame"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/fishCheckBox" />
+
+    <CheckBox
+        android:id="@+id/treenutsCheckBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:layout_marginEnd="50dp"
+        android:text="Tree Nuts"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/shellfishCheckBox" />
+
+    <EditText
+        android:id="@+id/otherEditText"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:layout_marginTop="15dp"
+        android:ems="10"
+        android:hint="Other"
+        android:inputType="text"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/treenutsCheckBox" />
+
+    <TextView
+        android:id="@+id/ttcTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="Filter by Time to Cook"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.09"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/otherEditText" />
+
+    <Spinner
+        android:id="@+id/ttcSpinner"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:layout_marginStart="45dp"
+        android:layout_marginTop="15dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ttcTextView" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

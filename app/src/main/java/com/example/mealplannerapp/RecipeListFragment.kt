@@ -36,11 +36,15 @@ class RecipeListFragment : Fragment() {
             filterRecipes(searchQuery)
         }
 
+        binding.imageButtonFilter.setOnClickListener {
+            (activity as? HomeActivity)?.navigateToFragment(FilterListFragment())
+        }
+
         return binding.root
     }
 
     private fun setupRecyclerView() {
-        // Sample Data (Replace with actual database/fetch logic)
+        //TODO: Replace with actual db fetching logic
         fullRecipeList = listOf(
             Recipe("Cheese Pizza", "https://example.com/pizza.jpg", "15 mins"),
             Recipe("Pepperoni Pizza", "https://example.com/pizza.jpg", "20 mins"),

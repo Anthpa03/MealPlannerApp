@@ -27,12 +27,15 @@ class HomeFragment : Fragment() {
         val username = SharedPreferencesManager.getUsername(requireContext())
         binding.textViewUsername.text = username
 
-        // Navigate to RecipeListFragment when clicking EditTextSearch or the ImageButtonSearch
+        // Navigate to RecipeListFragment and FilterListFragment
         binding.editTextSearch.setOnClickListener {
             navigateToRecipeList()
         }
         binding.imageButtonSearch.setOnClickListener{
             navigateToRecipeList()
+        }
+        binding.imageButtonFilter.setOnClickListener {
+            (activity as? HomeActivity)?.navigateToFragment(FilterListFragment())
         }
     }
 
@@ -43,11 +46,6 @@ class HomeFragment : Fragment() {
                 putString("search_query", searchQuery)
             }
         }
-
-        val fragmentManager = requireActivity().supportFragmentManager
-        fragmentManager.beginTransaction()
-            .replace(R.id.frame_layout, fragment)
-            .addToBackStack(null)
-            .commit()
+        (activity as? HomeActivity)?.navigateToFragment(fragment)
     }
 }
