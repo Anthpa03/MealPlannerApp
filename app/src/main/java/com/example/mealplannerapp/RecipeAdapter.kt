@@ -8,8 +8,8 @@ import com.example.mealplannerapp.databinding.RecyclerViewCardBinding
 import com.example.mealplannerapp.RecipeModel as Recipe
 
 class RecipeAdapter(
-    private val recipes: List<Recipe>,
-    private val onItemClick: (Recipe) -> Unit
+    private val recipes: MutableList<RecipeSearch.RecipeDisplayInfo>,
+    private val onItemClick: (RecipeSearch.RecipeDisplayInfo) -> Unit
 ) : RecyclerView.Adapter<RecipeAdapter.RecipeViewHolder>() {
 
     inner class RecipeViewHolder(val binding: RecyclerViewCardBinding) : RecyclerView.ViewHolder(binding.root)
@@ -22,15 +22,16 @@ class RecipeAdapter(
     override fun onBindViewHolder(holder: RecipeViewHolder, position: Int) {
         val recipe = recipes[position]
 
-        holder.binding.textViewRecipeName.text = recipe.name
+        // Use the new property names from RecipeDisplayInfo
+        holder.binding.textViewRecipeName.text = recipe.title
         holder.binding.textViewTtc.text = recipe.cookTime
 
         holder.binding.imageButtonBookmark.setOnClickListener { button ->
-            button.isSelected = !button.isSelected  // Toggle selection state of bookmark button
+            button.isSelected = !button.isSelected  // Toggle bookmark selection
         }
 
         Glide.with(holder.itemView.context)
-            .load(recipe.picture)
+            .load(recipe.imageUrl)
             .placeholder(R.drawable.pizza)
             .into(holder.binding.imageViewRecipeIc)
 
@@ -41,3 +42,4 @@ class RecipeAdapter(
 
     override fun getItemCount(): Int = recipes.size
 }
+

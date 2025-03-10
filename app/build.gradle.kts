@@ -47,8 +47,9 @@ dependencies {
 
     implementation ("io.realm.kotlin:library-base:3.0.0")
 
+    implementation ("com.google.code.gson:gson:2.10.1")
 
-
+    implementation ("com.squareup.okhttp3:okhttp:4.9.3")
     // Dagger Core
     implementation ("com.google.dagger:dagger:2.55")
     implementation("androidx.navigation:navigation-fragment:2.8.7")

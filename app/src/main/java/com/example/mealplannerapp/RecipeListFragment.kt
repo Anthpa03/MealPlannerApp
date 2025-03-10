@@ -1,6 +1,5 @@
 package com.example.mealplannerapp
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -8,16 +7,20 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mealplannerapp.databinding.FragmentRecipeListBinding
-import com.example.mealplannerapp.RecipeModel as Recipe
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class RecipeListFragment : Fragment() {
 
     private lateinit var binding: FragmentRecipeListBinding
-    private lateinit var adapter: RecipeAdapter
-    private var fullRecipeList = listOf<Recipe>()
-    private var filteredRecipeList = mutableListOf<Recipe>()
+    private lateinit var adapter: RecipeAdapter  // Adapter now takes RecipeDisplayInfo items
+    private var fullRecipeList = listOf<RecipeSearch.RecipeDisplayInfo>()
+    private var filteredRecipeList = mutableListOf<RecipeSearch.RecipeDisplayInfo>()
+    private val API_KEY = "0c2296339d27412a8d9afdf7557ee6a7"
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -25,15 +28,19 @@ class RecipeListFragment : Fragment() {
     ): View {
         binding = FragmentRecipeListBinding.inflate(inflater, container, false)
 
-        // Retrieve the search query and filter items
+        // Retrieve the search query and display it in the search EditText
         val searchQuery = arguments?.getString("search_query") ?: ""
         binding.editTextSearch.setText(searchQuery)
 
         setupRecyclerView()
         setupSearchListener()
 
+        // If a search query exists, fetch recipes from Spoonacular.
+        // Otherwise, load a default hardcoded list.
         if (searchQuery.isNotEmpty()) {
-            filterRecipes(searchQuery)
+            fetchRecipes(searchQuery)
+        } else {
+            loadDefaultRecipes()
         }
 
         binding.imageButtonFilter.setOnClickListener {
@@ -44,22 +51,11 @@ class RecipeListFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        //TODO: Replace with actual db fetching logic
-        fullRecipeList = listOf(
-            Recipe("Cheese Pizza", "https://example.com/pizza.jpg", "15 mins"),
-            Recipe("Pepperoni Pizza", "https://example.com/pizza.jpg", "20 mins"),
-            Recipe("Hawaiian Pizza", "https://example.com/pizza.jpg", "25 mins"),
-            Recipe("Vegan Burger", "https://example.com/burger.jpg", "10 mins"),
-            Recipe("Grilled Chicken", "https://example.com/chicken.jpg", "30 mins")
-        )
-
-        //TODO: Handle recipe item click
         adapter = RecipeAdapter(filteredRecipeList) { recipe ->
+            // Handle recipe item click, e.g., navigate to a detail screen
         }
-
         binding.recyclerViewRecipes.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerViewRecipes.adapter = adapter
-        filterRecipes(binding.editTextSearch.text.toString())
     }
 
     private fun setupSearchListener() {
@@ -72,22 +68,72 @@ class RecipeListFragment : Fragment() {
         })
     }
 
-    @SuppressLint("NotifyDataSetChanged", "SetTextI18n")
     private fun filterRecipes(query: String) {
         filteredRecipeList.clear()
-
         if (query.isEmpty()) {
             filteredRecipeList.addAll(fullRecipeList)
         } else {
             filteredRecipeList.addAll(
                 fullRecipeList.filter { recipe ->
-                    recipe.name.contains(query, ignoreCase = true)
+                    recipe.title.contains(query, ignoreCase = true)
                 }
             )
         }
-
-        // Update view after filter
-        adapter.run { notifyDataSetChanged() }
+        adapter.notifyDataSetChanged()
         binding.textViewResults.text = "Showing ${filteredRecipeList.size} results"
+    }
+
+    // Fetch recipes by ingredients (comma-separated) using your Spoonacular API methods
+    private fun fetchRecipes(ingredientsQuery: String) {
+        // Split the query string into individual ingredients
+        val ingredients = ingredientsQuery.split(",").map { it.trim() }
+        lifecycleScope.launch {
+            // Call your search method in a background thread
+            val recipeSummaries = withContext(Dispatchers.IO) {
+                RecipeSearch.searchRecipesByIngredients(ingredients, apiKey = API_KEY)
+            }
+            // For each summary, fetch detailed info and create a RecipeDisplayInfo instance
+            val recipeDisplayList = recipeSummaries?.mapNotNull { summary ->
+                withContext(Dispatchers.IO) {
+                    // Assume summary has an 'id' property
+                    RecipeSearch.getRecipeDisplayInfo(summary.id, API_KEY)
+                }
+            } ?: emptyList()
+
+            fullRecipeList = recipeDisplayList
+            filterRecipes(binding.editTextSearch.text.toString())
+        }
+    }
+
+    // Loads a default list of recipes in case no search query is provided
+    private fun loadDefaultRecipes() {
+        fullRecipeList = listOf(
+            RecipeSearch.RecipeDisplayInfo(
+                "Cheese Pizza",
+                "https://example.com/pizza.jpg",
+                "15 mins"
+            ),
+            RecipeSearch.RecipeDisplayInfo(
+                "Pepperoni Pizza",
+                "https://example.com/pizza.jpg",
+                "20 mins"
+            ),
+            RecipeSearch.RecipeDisplayInfo(
+                "Hawaiian Pizza",
+                "https://example.com/pizza.jpg",
+                "25 mins"
+            ),
+            RecipeSearch.RecipeDisplayInfo(
+                "Vegan Burger",
+                "https://example.com/burger.jpg",
+                "10 mins"
+            ),
+            RecipeSearch.RecipeDisplayInfo(
+                "Grilled Chicken",
+                "https://example.com/chicken.jpg",
+                "30 mins"
+            )
+        )
+        filterRecipes(binding.editTextSearch.text.toString())
     }
 }
