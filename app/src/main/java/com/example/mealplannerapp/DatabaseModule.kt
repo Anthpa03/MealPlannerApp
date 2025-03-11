@@ -16,7 +16,8 @@ object DatabaseModule{
     fun provideRealm():Realm{
         val config=RealmConfiguration.Builder(
             schema = setOf(
-                User::class, Recipe::class, Ingredient::class
+                User::class,
+                Ingredient::class
             )
         )
             .compactOnLaunch()

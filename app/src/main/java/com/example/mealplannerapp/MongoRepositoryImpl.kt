@@ -60,4 +60,9 @@ class MongoRepositoryImpl(val realm: Realm):MongoRepository {
             .find()
     }
 
+    override suspend fun updateIngredientQuantity(user: User, ingredientName: String, newQuantity: String) {
+        realm.write {
+            user.ingredients.firstOrNull { it.name == ingredientName }?.quantity = newQuantity
+        }
+    }
 }
