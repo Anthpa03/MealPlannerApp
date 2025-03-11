@@ -83,6 +83,12 @@ class HomeViewModel @Inject constructor(private val repository:MongoRepository):
             }
         }
     }
+    fun getIngredientsForUser(username: String): List<Ingredient> {
+        // Find the first user whose Username matches the parameter.
+        val user = data.value.find { it.Username == username }
+        // Return a copy of the ingredients list (or an empty list if not found).
+        return user?.ingredients?.toList() ?: emptyList()
+    }
     suspend fun authenticateUser(): Boolean {
         return withContext(Dispatchers.IO) {
             val username = name.value ?: ""
@@ -91,6 +97,55 @@ class HomeViewModel @Inject constructor(private val repository:MongoRepository):
             val isAuthenticated = user != null
             Log.d("AuthDebug", "Authentication result: $isAuthenticated")
             isAuthenticated
+        }
+    }
+    // Update the quantity of a given ingredient for a specific user.
+    fun modifyIngredientQuantity(username: String, ingredientName: String, newQuantity: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val user = data.value.find { it.Username == username }
+            user?.let { u ->
+                // Find the ingredient by its primary key (name).
+                u.ingredients.firstOrNull { it.name == ingredientName }?.let { ingredient ->
+                    ingredient.quantity = newQuantity
+                    // Update the user in the repository, which should perform the write transaction.
+                    repository.updateUser(u)
+                }
+            }
+        }
+    }
+
+    // Add a new ingredient to the specified user's ingredient list.
+    fun addIngredient(username: String, ingredientName: String, quantity: String, unit: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val user = data.value.find { it.Username == username }
+            user?.let { u ->
+                // Create the new ingredient piece by piece
+                val newIngredient = Ingredient().apply {
+                    name = ingredientName
+                    this.quantity = quantity
+                    this.unit = unit
+                }
+                // Add the new ingredient to the user's list
+                u.ingredients.add(newIngredient)
+                // Persist the change via the repository
+                repository.updateUser(u)
+            }
+        }
+    }
+
+
+    // Remove an ingredient from the specified user's ingredient list.
+    fun removeIngredient(username: String, ingredientName: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val user = data.value.find { it.Username == username }
+            user?.let { u ->
+                // Locate the ingredient to remove.
+                val ingredient = u.ingredients.firstOrNull { it.name == ingredientName }
+                if (ingredient != null) {
+                    u.ingredients.remove(ingredient)
+                    repository.updateUser(u)
+                }
+            }
         }
     }
 }
