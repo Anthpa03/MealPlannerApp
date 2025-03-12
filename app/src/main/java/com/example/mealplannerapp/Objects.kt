@@ -11,7 +11,9 @@ import org.mongodb.kbson.ObjectId
 // Define the Ingredient class as a RealmObject.
 class Ingredient : RealmObject {
     var name: String = ""
+
     var quantity: String = ""
+    var unit: String = ""
 }
 
 // Update the User class to include a list of ingredients.

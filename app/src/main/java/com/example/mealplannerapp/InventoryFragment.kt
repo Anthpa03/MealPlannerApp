@@ -20,15 +20,66 @@ import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mealplannerapp.databinding.FragmentInventoryBinding
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class InventoryFragment : Fragment() {
     private lateinit var binding: FragmentInventoryBinding
     private lateinit var adapter: InventoryAdapter
     private lateinit var recyclerView: RecyclerView
     private val inventoryList = mutableListOf<InventoryItem>()
+    private val homeViewModel: HomeViewModel by viewModels()
+    private var ingredients = listOf(
+
+        // Vegetables
+        "Tomato", "Onion", "Garlic", "Carrot", "Potato", "Sweet Potato", "Bell Pepper",
+        "Cucumber", "Zucchini", "Eggplant", "Spinach", "Kale", "Lettuce", "Cabbage",
+        "Cauliflower", "Broccoli", "Celery", "Mushrooms", "Green Beans", "Asparagus",
+        "Radish", "Beetroot", "Turnip", "Okra",
+
+        // Fruits
+        "Apple", "Banana", "Orange", "Lemon", "Lime", "Grapes", "Pineapple", "Mango",
+        "Watermelon", "Papaya", "Strawberry", "Blueberry", "Raspberry", "Blackberry",
+        "Pear", "Cherry", "Peach", "Plum", "Avocado", "Coconut",
+
+        // Dairy & Eggs
+        "Milk", "Cheese", "Butter", "Yogurt", "Cream", "Sour Cream", "Cottage Cheese",
+        "Mozzarella", "Parmesan", "Feta Cheese", "Cheddar Cheese", "Goat Cheese", "Eggs",
+
+        // Meat & Seafood
+        "Chicken Breast", "Chicken Thighs", "Chicken Wings", "Ground Beef", "Steak",
+        "Pork Chops", "Ground Pork", "Bacon", "Sausage", "Lamb", "Turkey", "Shrimp",
+        "Salmon", "Tuna", "Cod", "Tilapia", "Crab", "Lobster", "Mussels",
+
+        // Grains & Pasta
+        "Rice", "Brown Rice", "White Rice", "Basmati Rice", "Quinoa", "Oats", "Barley",
+        "Couscous", "Pasta", "Spaghetti", "Macaroni", "Bread", "Tortilla", "Pita Bread",
+
+        // Nuts, Seeds & Legumes
+        "Almonds", "Cashews", "Peanuts", "Walnuts", "Chia Seeds", "Flaxseeds",
+        "Sunflower Seeds", "Lentils", "Chickpeas", "Black Beans", "Kidney Beans",
+
+        // Spices & Condiments
+        "Salt", "Black Pepper", "Paprika", "Chili Powder", "Cumin", "Coriander",
+        "Oregano", "Thyme", "Rosemary", "Basil", "Cinnamon", "Nutmeg", "Cloves",
+        "Vanilla Extract", "Soy Sauce", "Honey", "Mustard", "Ketchup", "Mayonnaise",
+        "Olive Oil", "Vinegar"
+    )
+    private var units = listOf(
+        "Teaspoon (tsp)", "Tablespoon (tbsp)", "Cup", "Fluid Ounce (fl oz)",
+        "Pint (pt)", "Quart (qt)", "Gallon (gal)", "Milliliter (ml)", "Liter (l)",
+        "Ounce (oz)", "Pound (lb)", "Gram (g)", "Kilogram (kg)"
+    )
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -68,7 +119,6 @@ class InventoryFragment : Fragment() {
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
-
         return binding.root
     }
 
@@ -100,31 +150,39 @@ class InventoryFragment : Fragment() {
 
         val autoCompleteIngredient = dialog.findViewById<AutoCompleteTextView>(R.id.autoCompleteTextView_ingredient)
         val editTextQuantity = dialog.findViewById<EditText>(R.id.editText_quantity)
+        val autoCompleteUnit = dialog.findViewById<AutoCompleteTextView>(R.id.autoCompleteTextView_unit)
         val buttonAddItem = dialog.findViewById<Button>(R.id.button_add_item)
         val buttonExit = dialog.findViewById<ImageButton>(R.id.cancelButton)
-        editTextQuantity.isEnabled = false
 
-        // Sample ingredient list for testing autocomplete functionality
-        val ingredients = listOf("Tomato", "Onion", "Garlic", "Carrot", "Spinach")
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, ingredients)
-        autoCompleteIngredient.setAdapter(adapter)
+        editTextQuantity.isEnabled = false
+        autoCompleteUnit.isEnabled = false
+
+        val ingredientsAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, ingredients)
+        autoCompleteIngredient.setAdapter(ingredientsAdapter)
+        val unitsAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, units)
+        autoCompleteUnit.setAdapter(unitsAdapter)
 
         // Enables quantity input once an ingredient has been selected
         autoCompleteIngredient.setOnItemClickListener { _, _, _, _ ->
             editTextQuantity.isEnabled = true
         }
+        editTextQuantity.setOnClickListener{ _ ->
+            autoCompleteUnit.isEnabled = true
+        }
 
         buttonAddItem.setOnClickListener {
-            val selectedIngredient = autoCompleteIngredient.text.toString().trim()
+            val ingredient = autoCompleteIngredient.text.toString().trim()
             val quantity = editTextQuantity.text.toString().trim()
-
-            if (selectedIngredient.isEmpty()) {
+            val unit = autoCompleteUnit.text.toString()
+            if (ingredient.isEmpty()) {
                 Toast.makeText(requireContext(), "Please enter a valid ingredient", Toast.LENGTH_SHORT).show()
             } else if (quantity.isEmpty()) {
                 Toast.makeText(requireContext(), "Please enter the quantity", Toast.LENGTH_SHORT).show()
+            } else if (unit.isEmpty()) {
+                Toast.makeText(requireContext(), "Please enter the correct unit", Toast.LENGTH_SHORT).show()
             } else {
-                //TODO:add logic for storing ingredients to db
-                Toast.makeText(requireContext(), "Added: $quantity of $selectedIngredient", Toast.LENGTH_SHORT).show()
+                saveIngredients(ingredient, quantity, unit)
+                Toast.makeText(requireContext(), "Added: $quantity $unit of $ingredient", Toast.LENGTH_SHORT).show()
                 dialog.dismiss()
             }
         }
@@ -137,7 +195,6 @@ class InventoryFragment : Fragment() {
         dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         dialog.window?.attributes?.windowAnimations = R.style.DialogAnimation
         dialog.window?.setGravity(Gravity.BOTTOM)
-
     }
 
     private fun loadInventoryData() {
@@ -150,5 +207,23 @@ class InventoryFragment : Fragment() {
             )
         )
         adapter.notifyDataSetChanged()  // Refresh RecyclerView
+    }
+
+    private fun saveIngredients(ingredient: String, quantity: String, unit: String) {
+        if (ingredient.isNotEmpty() && quantity.isNotEmpty() && unit.isNotEmpty()) {
+            if (ingredient in ingredients) {
+                lifecycleScope.launch(Dispatchers.IO) {
+                    SharedPreferencesManager.getUsername(requireContext())
+                        ?.let {
+                            homeViewModel.addIngredient(
+                                it,
+                                ingredient,
+                                quantity,
+                                unit
+                            )
+                        }
+                }
+            }
+        }
     }
 }
