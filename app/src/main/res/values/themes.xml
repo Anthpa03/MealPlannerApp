@@ -9,4 +9,8 @@
         <item name="android:navigationBarColor">@color/orange</item>
     </style>
     <style name="Theme.MealPlannerApp" parent="Base.Theme.MealPlannerApp" />
+    <style name="DialogAnimation">
+        <item name="android:windowEnterAnimation">@anim/slide_from_bottom</item>
+        <item name="android:windowExitAnimation">@anim/slide_out_bottom</item>
+    </style>
 </resources>

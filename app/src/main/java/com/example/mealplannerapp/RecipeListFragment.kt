@@ -1,11 +1,15 @@
 package com.example.mealplannerapp
 
+import android.R
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -13,6 +17,7 @@ import com.example.mealplannerapp.databinding.FragmentRecipeListBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+
 
 class RecipeListFragment : Fragment() {
 
@@ -47,13 +52,34 @@ class RecipeListFragment : Fragment() {
             (activity as? HomeActivity)?.navigateToFragment(FilterListFragment())
         }
 
+        // Initialize sorting options for spinner
+        val sortOptions = listOf("Default", "Ascending", "Descending")
+        val spinnerAdapter =
+            ArrayAdapter(requireContext(), R.layout.simple_spinner_dropdown_item, sortOptions)
+        binding.spinnerSort.adapter = spinnerAdapter
+
+        // Handle sorting selection
+        binding.spinnerSort.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                (view as TextView).text = null
+                when (position) {
+                    0 -> sortRecipes("default")
+                    1 -> sortRecipes("ascending")
+                    2 -> sortRecipes("descending")
+                }
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
         return binding.root
     }
 
     private fun setupRecyclerView() {
-        adapter = RecipeAdapter(filteredRecipeList) { recipe ->
-            // Handle recipe item click, e.g., navigate to a detail screen
-        }
+        adapter = RecipeAdapter(filteredRecipeList) {}
         binding.recyclerViewRecipes.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerViewRecipes.adapter = adapter
     }
@@ -135,5 +161,17 @@ class RecipeListFragment : Fragment() {
             )
         )
         filterRecipes(binding.editTextSearch.text.toString())
+    }
+
+    private fun sortRecipes(order: String) {
+        when (order) {
+            "ascending" -> {
+            }
+            "descending" -> {
+            }
+            else -> {
+                // Default should be prioritizing bookmarks
+            }
+        }
     }
 }

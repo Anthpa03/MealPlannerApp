@@ -64,19 +64,18 @@
         app:layout_constraintTop_toBottomOf="@+id/imageButton_filter"
         app:layout_constraintVertical_bias="0.63" />
 
-    <ImageButton
-        android:id="@+id/imageButton_sort"
+    <Spinner
+        android:id="@+id/spinner_sort"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:background="#FFFFFF"
+        android:background="@drawable/sort"
         android:contentDescription="Sort Button"
         app:layout_constraintBottom_toTopOf="@+id/recyclerView_recipes"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.9"
         app:layout_constraintStart_toEndOf="@+id/textView_results"
         app:layout_constraintTop_toBottomOf="@+id/imageButton_search"
-        app:layout_constraintVertical_bias="1.0"
-        android:src="@drawable/sort"/>
+        app:layout_constraintVertical_bias="1.0" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView_recipes"
