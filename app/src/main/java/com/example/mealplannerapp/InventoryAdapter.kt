@@ -19,7 +19,8 @@ class InventoryAdapter(
         val item = inventoryList[position]
 
         holder.binding.textViewIngredientName.text = item.name
-        holder.binding.amountTextView.text = String.format("%d", item.amount)
+        holder.binding.amountTextView.text = item.quantity
+        holder.binding.unitTextView.text = item.unit
 
         holder.binding.buttonEdit.setOnClickListener {
             onEditClick(item)
@@ -36,5 +37,6 @@ class InventoryAdapter(
 //TODO:REMOVE WHEN FINISHED IMPLEMENTING DB FETCHING LOGIC
 data class InventoryItem(
     val name: String,
-    val amount: Int
+    val quantity: String,
+    val unit: String
 )

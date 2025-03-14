@@ -6,6 +6,8 @@ import android.app.Dialog
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -135,7 +137,18 @@ class InventoryFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        adapter = InventoryAdapter(inventoryList) {}
+        adapter = InventoryAdapter(inventoryList) { ingredient ->
+            // Find position of the ingredient
+            val position = inventoryList.indexOf(ingredient)
+            if (position != -1) {
+                showBottomDialog(
+                    existingIngredient = ingredient.name,
+                    existingQuantity = ingredient.quantity,
+                    existingUnit = ingredient.unit,
+                    position = position
+                )
+            }
+        }
         binding.recyclerViewIngredients.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerViewIngredients.apply {
             layoutManager = LinearLayoutManager(requireContext())
@@ -143,7 +156,12 @@ class InventoryFragment : Fragment() {
         }
     }
 
-    private fun showBottomDialog(){
+    private fun showBottomDialog(
+        existingIngredient: String? = null,
+        existingQuantity: String? = null,
+        existingUnit: String? = null,
+        position: Int? = null
+    ) {
         val dialog = Dialog(requireContext())
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
         dialog.setContentView(R.layout.bottom_dialog_add_ingredients)
@@ -162,34 +180,63 @@ class InventoryFragment : Fragment() {
         val unitsAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, units)
         autoCompleteUnit.setAdapter(unitsAdapter)
 
+        // Prefill ingredient value if editing an existing ingredient
+        if (existingIngredient != null) {
+            autoCompleteIngredient.setText(existingIngredient, false)
+            autoCompleteIngredient.isEnabled = false
+            editTextQuantity.isEnabled = true
+            autoCompleteUnit.isEnabled = true
+        }
+        if (existingQuantity != null) editTextQuantity.setText(existingQuantity)
+        if (existingUnit != null) autoCompleteUnit.setText(existingUnit, false)
+
         // Enables quantity input once an ingredient has been selected
         autoCompleteIngredient.setOnItemClickListener { _, _, _, _ ->
             editTextQuantity.isEnabled = true
         }
-        editTextQuantity.setOnClickListener{ _ ->
-            autoCompleteUnit.isEnabled = true
-        }
+
+        // Enable autoCompleteUnit only if the user has entered some text
+        editTextQuantity.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                autoCompleteUnit.isEnabled = !s.isNullOrEmpty()
+            }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        })
+
 
         buttonAddItem.setOnClickListener {
             val ingredient = autoCompleteIngredient.text.toString().trim()
             val quantity = editTextQuantity.text.toString().trim()
-            val unit = autoCompleteUnit.text.toString()
+            val unit = autoCompleteUnit.text.toString().trim()
+
             if (ingredient.isEmpty()) {
                 Toast.makeText(requireContext(), "Please enter a valid ingredient", Toast.LENGTH_SHORT).show()
             } else if (quantity.isEmpty()) {
                 Toast.makeText(requireContext(), "Please enter the quantity", Toast.LENGTH_SHORT).show()
-            } else if (unit.isEmpty()) {
-                Toast.makeText(requireContext(), "Please enter the correct unit", Toast.LENGTH_SHORT).show()
             } else {
-                saveIngredients(ingredient, quantity, unit)
-                Toast.makeText(requireContext(), "Added: $quantity $unit of $ingredient", Toast.LENGTH_SHORT).show()
+                if (position != null) {
+                    // Edit existing item
+                    inventoryList[position] = InventoryItem(ingredient, quantity, unit)
+                    adapter.notifyItemChanged(position)  // Refresh the specific item
+                } else {
+                    // Add new ingredient
+                    val newIngredient = InventoryItem(ingredient, quantity, unit)
+                    inventoryList.add(newIngredient)
+                    adapter.notifyItemInserted(inventoryList.size - 1) // Notify adapter of new ingredient added
+                    saveIngredients(ingredient, quantity, unit)
+                    Toast.makeText(requireContext(), "Added: $quantity $unit of $ingredient", Toast.LENGTH_SHORT).show()
+                }
                 dialog.dismiss()
             }
         }
 
-        buttonExit.setOnClickListener{
+        buttonExit.setOnClickListener {
             dialog.dismiss()
         }
+
         dialog.show()
         dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
         dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
@@ -197,13 +244,14 @@ class InventoryFragment : Fragment() {
         dialog.window?.setGravity(Gravity.BOTTOM)
     }
 
+
     private fun loadInventoryData() {
         //TODO: replace with real data
         inventoryList.addAll(
             listOf(
-                InventoryItem("Tomato", 2),
-                InventoryItem("Milk", 5),
-                InventoryItem("Eggs", 12)
+                InventoryItem("Tomato", "2", ""),
+                InventoryItem("Milk", "5", "Gallons (gal)"),
+                InventoryItem("Eggs", "12", "")
             )
         )
         adapter.notifyDataSetChanged()  // Refresh RecyclerView

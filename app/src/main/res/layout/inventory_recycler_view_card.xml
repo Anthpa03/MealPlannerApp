@@ -75,7 +75,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="9dp"
                 android:text="Qty: "
                 android:textColor="#000000"
                 app:layout_constraintStart_toStartOf="parent"
@@ -89,6 +89,17 @@
                 android:text="Amount"
                 android:textColor="#000000"
                 app:layout_constraintStart_toEndOf="@+id/quantityTextView"
+                app:layout_constraintTop_toBottomOf="@+id/textView_ingredient_name" />
+
+            <TextView
+                android:id="@+id/unitTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:layout_marginTop="9dp"
+                android:text="Unit"
+                android:textColor="#000000"
+                app:layout_constraintStart_toEndOf="@+id/amountTextView"
                 app:layout_constraintTop_toBottomOf="@+id/textView_ingredient_name" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
