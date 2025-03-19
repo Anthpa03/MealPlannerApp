@@ -6,6 +6,23 @@
     android:layout_height="match_parent"
     android:background="@drawable/dialog_background">
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/button_remove_item"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="36dp"
+        android:text="Remove Item"
+        android:textColor="@color/darkRed"
+        app:backgroundTint="@color/white"
+        app:cornerRadius="30dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/button_add_item"
+        app:rippleColor="#33AAAAAA"
+        app:strokeColor="@color/dullRed"
+        app:strokeWidth="2dp" />
+
     <ImageView
         android:id="@+id/imageView_remove"
         android:layout_width="70dp"

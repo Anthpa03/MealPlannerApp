@@ -17,15 +17,17 @@ class HomeViewModel @Inject constructor(private val repository:MongoRepository):
     private var password = mutableStateOf("")
     private var objectId = mutableStateOf("")
     private var filtered = mutableStateOf(false)
-    private var data = mutableStateOf(emptyList<User>())
+    var data = mutableStateOf(emptyList<User>())
 
-    init{
+    init {
         viewModelScope.launch {
-            repository.getData().collect{
-                data.value=it
+            repository.getData().collect {
+                data.value = it
+                Log.d("HomeViewModel", "Loaded ${it.size} users from Realm")
             }
         }
     }
+
     fun updateName (name:String)
     {
         this.name.value=name
@@ -81,16 +83,16 @@ class HomeViewModel @Inject constructor(private val repository:MongoRepository):
             }
         }
     }
-    fun getIngredientsForUser(username: String): List<Ingredient> {
-        // Find the first user whose Username matches the parameter.
-        val user = data.value.find { it.Username == username }
-        // Return a copy of the ingredients list (or an empty list if not found).
+    suspend fun getIngredientsForUser(username: String): List<Ingredient> {
+        // Directly query Realm for the latest user data.
+        val user = repository.getUserByUsername(username)
         return user?.ingredients?.toList() ?: emptyList()
     }
+
     suspend fun authenticateUser(): Boolean {
         return withContext(Dispatchers.IO) {
-            val username = name.value ?: ""
-            val pass = password.value ?: ""
+            val username = name.value
+            val pass = password.value
             val user = repository.authenticateUser(username, pass)
             val isAuthenticated = user != null
             Log.d("AuthDebug", "Authentication result: $isAuthenticated")
@@ -98,52 +100,52 @@ class HomeViewModel @Inject constructor(private val repository:MongoRepository):
         }
     }
     // Update the quantity of a given ingredient for a specific user.
-    fun modifyIngredientQuantity(username: String, ingredientName: String, newQuantity: String) {
+    fun updateIngredient(username: String, ingredientName: String, newQuantity: String, newUnit: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            val user = data.value.find { it.Username == username }
-            user?.let { u ->
-                // Find the ingredient by its primary key (name).
-                u.ingredients.firstOrNull { it.name == ingredientName }?.let { ingredient ->
-                    ingredient.quantity = newQuantity
-                    // Update the user in the repository, which should perform the write transaction.
-                    repository.updateUser(u)
-                }
+            Log.d("HomeViewModel", "updateIngredient called for username: '$username', ingredient: '$ingredientName'")
+            // Get the user directly from Realm via the repository.
+            val user = repository.getUserByUsername(username)
+            if (user == null) {
+                Log.e("HomeViewModel", "User not found for username: '$username'")
+                return@launch
             }
+            Log.d("HomeViewModel", "User found: '${user.Username}' with id: ${user._id}")
+            // Delegate the update to the repository.
+            repository.updateIngredient(user._id, ingredientName, newQuantity, newUnit)
         }
     }
 
-    // Add a new ingredient to the specified user's ingredient list.
+
     fun addIngredient(username: String, ingredientName: String, quantity: String, unit: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            val user = data.value.find { it.Username == username }
-            user?.let { u ->
-                // Create the new ingredient piece by piece
-                val newIngredient = Ingredient().apply {
-                    name = ingredientName
-                    this.quantity = quantity
-                    this.unit = unit
-                }
-                // Add the new ingredient to the user's list
-                u.ingredients.add(newIngredient)
-                // Persist the change via the repository
-                repository.updateUser(u)
+            Log.d("HomeViewModel", "addIngredient called with username: '$username', ingredientName: '$ingredientName', quantity: '$quantity', unit: '$unit'")
+
+            // Query Realm directly for the user.
+            val user = repository.getUserByUsername(username)
+            if (user == null) {
+                Log.e("HomeViewModel", "Direct query: User not found for username: '$username'")
+                return@launch
+            } else {
+                Log.d("HomeViewModel", "Direct query: User found: '${user.Username}' with id: ${user._id}")
             }
+
+            // Now delegate the addition of the ingredient to the repository.
+            repository.addIngredient(user._id, ingredientName, quantity, unit)
         }
     }
 
 
-    // Remove an ingredient from the specified user's ingredient list.
     fun removeIngredient(username: String, ingredientName: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            val user = data.value.find { it.Username == username }
-            user?.let { u ->
-                // Locate the ingredient to remove.
-                val ingredient = u.ingredients.firstOrNull { it.name == ingredientName }
-                if (ingredient != null) {
-                    u.ingredients.remove(ingredient)
-                    repository.updateUser(u)
-                }
+            Log.d("HomeViewModel", "removeIngredient called for username: '$username', ingredient: '$ingredientName'")
+            val user = repository.getUserByUsername(username)
+            if (user == null) {
+                Log.e("HomeViewModel", "User not found for username: '$username'")
+                return@launch
             }
+            Log.d("HomeViewModel", "User found: '${user.Username}' with id: ${user._id}")
+            // Delegate the removal to the repository.
+            repository.removeIngredient(user._id, ingredientName)
         }
     }
 }

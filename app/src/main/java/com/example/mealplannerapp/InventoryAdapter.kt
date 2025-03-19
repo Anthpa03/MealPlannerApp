@@ -1,6 +1,7 @@
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.example.mealplannerapp.R
 import com.example.mealplannerapp.databinding.InventoryRecyclerViewCardBinding
 
 class InventoryAdapter(
@@ -17,15 +18,16 @@ class InventoryAdapter(
 
     override fun onBindViewHolder(holder: InventoryViewHolder, position: Int) {
         val item = inventoryList[position]
-
         holder.binding.textViewIngredientName.text = item.name
         holder.binding.amountTextView.text = item.quantity
         holder.binding.unitTextView.text = item.unit
 
+        // When the edit button is clicked, trigger the onEditClick lambda.
         holder.binding.buttonEdit.setOnClickListener {
             onEditClick(item)
         }
 
+        // Bookmark logic remains unchanged.
         holder.binding.imageButtonBookmark.setOnClickListener { button ->
             button.isSelected = !button.isSelected  // Toggle bookmark selection
         }

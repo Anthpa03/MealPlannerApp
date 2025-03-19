@@ -8,6 +8,7 @@ import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -30,6 +31,7 @@ import com.example.mealplannerapp.databinding.FragmentInventoryBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @AndroidEntryPoint
 class InventoryFragment : Fragment() {
@@ -79,9 +81,6 @@ class InventoryFragment : Fragment() {
         "Pint (pt)", "Quart (qt)", "Gallon (gal)", "Milliliter (ml)", "Liter (l)",
         "Ounce (oz)", "Pound (lb)", "Gram (g)", "Kilogram (kg)"
     )
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -101,7 +100,11 @@ class InventoryFragment : Fragment() {
         // Initialize sorting options for spinner
         val sortOptions = listOf("Default", "Quantity Ascending", "Quantity Descending")
         val spinnerAdapter =
-            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, sortOptions)
+            ArrayAdapter(
+                requireContext(),
+                android.R.layout.simple_spinner_dropdown_item,
+                sortOptions
+            )
         binding.spinnerSort.adapter = spinnerAdapter
 
         // Handle sorting selection
@@ -119,6 +122,7 @@ class InventoryFragment : Fragment() {
                     2 -> sortIngredients("descending")
                 }
             }
+
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
         return binding.root
@@ -128,8 +132,10 @@ class InventoryFragment : Fragment() {
         when (order) {
             "ascending" -> {
             }
+
             "descending" -> {
             }
+
             else -> {
                 // Default for this one should also be prioritizing bookmarks
             }
@@ -170,8 +176,10 @@ class InventoryFragment : Fragment() {
         val editTextQuantity = dialog.findViewById<EditText>(R.id.editText_quantity)
         val autoCompleteUnit = dialog.findViewById<AutoCompleteTextView>(R.id.autoCompleteTextView_unit)
         val buttonAddItem = dialog.findViewById<Button>(R.id.button_add_item)
+        val buttonRemoveItem = dialog.findViewById<Button>(R.id.button_remove_item)
         val buttonExit = dialog.findViewById<ImageButton>(R.id.cancelButton)
 
+        // Initially disable quantity and unit input.
         editTextQuantity.isEnabled = false
         autoCompleteUnit.isEnabled = false
 
@@ -180,33 +188,39 @@ class InventoryFragment : Fragment() {
         val unitsAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, units)
         autoCompleteUnit.setAdapter(unitsAdapter)
 
-        // Prefill ingredient value if editing an existing ingredient
+        // Determine if this dialog is for editing an existing ingredient.
         if (existingIngredient != null) {
+            // Prefill fields for editing.
             autoCompleteIngredient.setText(existingIngredient, false)
             autoCompleteIngredient.isEnabled = false
             editTextQuantity.isEnabled = true
             autoCompleteUnit.isEnabled = true
+            // Change the primary button text to "Edit".
+            buttonAddItem.text = "Edit"
+            // Make the remove button visible when editing.
+            buttonRemoveItem.visibility = View.VISIBLE
+        } else {
+            // Hide the remove button when adding a new ingredient.
+            buttonRemoveItem.visibility = View.GONE
         }
         if (existingQuantity != null) editTextQuantity.setText(existingQuantity)
         if (existingUnit != null) autoCompleteUnit.setText(existingUnit, false)
 
-        // Enables quantity input once an ingredient has been selected
+        // Enable quantity input once an ingredient is selected.
         autoCompleteIngredient.setOnItemClickListener { _, _, _, _ ->
             editTextQuantity.isEnabled = true
         }
 
-        // Enable autoCompleteUnit only if the user has entered some text
+        // Enable unit input only if some quantity is entered.
         editTextQuantity.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
                 autoCompleteUnit.isEnabled = !s.isNullOrEmpty()
             }
-
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
 
-
+        // Primary "Add" or "Edit" button action.
         buttonAddItem.setOnClickListener {
             val ingredient = autoCompleteIngredient.text.toString().trim()
             val quantity = editTextQuantity.text.toString().trim()
@@ -218,19 +232,37 @@ class InventoryFragment : Fragment() {
                 Toast.makeText(requireContext(), "Please enter the quantity", Toast.LENGTH_SHORT).show()
             } else {
                 if (position != null) {
-                    // Edit existing item
+                    // Call update logic if editing.
+                    updateIngredientInUI(ingredient, quantity, unit)
                     inventoryList[position] = InventoryItem(ingredient, quantity, unit)
-                    adapter.notifyItemChanged(position)  // Refresh the specific item
+                    adapter.notifyItemChanged(position)
                 } else {
-                    // Add new ingredient
-                    val newIngredient = InventoryItem(ingredient, quantity, unit)
+                    // Otherwise, add a new ingredient.
+                    val unitFinal = if (unit.isEmpty()) "" else unit
+                    saveIngredients(ingredient, quantity, unitFinal)
+                    val newIngredient = InventoryItem(ingredient, quantity, unitFinal)
                     inventoryList.add(newIngredient)
-                    adapter.notifyItemInserted(inventoryList.size - 1) // Notify adapter of new ingredient added
-                    saveIngredients(ingredient, quantity, unit)
-                    Toast.makeText(requireContext(), "Added: $quantity $unit of $ingredient", Toast.LENGTH_SHORT).show()
+                    adapter.notifyItemInserted(inventoryList.size - 1)
+                    Toast.makeText(requireContext(), "Added: $quantity $unitFinal of $ingredient", Toast.LENGTH_SHORT).show()
                 }
                 dialog.dismiss()
             }
+        }
+
+        // Remove button action.
+        buttonRemoveItem.setOnClickListener {
+            val ingredient = autoCompleteIngredient.text.toString().trim()
+            if (ingredient.isNotEmpty()) {
+                removeIngredientInUI(ingredient)
+                val index = inventoryList.indexOfFirst { it.name.trim().equals(ingredient, ignoreCase = true) }
+                if (index != -1) {
+                    inventoryList.removeAt(index)
+                    lifecycleScope.launch(Dispatchers.Main) {
+                        adapter.notifyItemRemoved(index)
+                    }
+                }
+            }
+            dialog.dismiss()
         }
 
         buttonExit.setOnClickListener {
@@ -245,31 +277,113 @@ class InventoryFragment : Fragment() {
     }
 
 
+
+
     private fun loadInventoryData() {
-        //TODO: replace with real data
-        inventoryList.addAll(
-            listOf(
-                InventoryItem("Tomato", "2", ""),
-                InventoryItem("Milk", "5", "Gallons (gal)"),
-                InventoryItem("Eggs", "12", "")
+        lifecycleScope.launch(Dispatchers.IO) {
+            // Retrieve the active username from SharedPreferences.
+            val username = SharedPreferencesManager.getUsername(requireContext())
+            if (username.isNullOrEmpty()) {
+                Log.e("InventoryFragment", "No username found in SharedPreferences!")
+                return@launch
+            }
+            Log.d("InventoryFragment", "Loading ingredients for username: '$username'")
+
+            // Use HomeViewModel to get the list of Ingredient objects for the user.
+            val ingredientsFromRealm = homeViewModel.getIngredientsForUser(username)
+            Log.d(
+                "InventoryFragment",
+                "Found ${ingredientsFromRealm.size} ingredients for user: '$username'"
             )
-        )
-        adapter.notifyDataSetChanged()  // Refresh RecyclerView
+
+            // Clear current inventory list and convert each Ingredient to an InventoryItem.
+            inventoryList.clear()
+            ingredientsFromRealm.forEach { ingredient ->
+                inventoryList.add(
+                    InventoryItem(
+                        ingredient.name,
+                        ingredient.quantity,
+                        ingredient.unit
+                    )
+                )
+            }
+
+            // Notify the adapter on the main thread.
+            withContext(Dispatchers.Main) {
+                adapter.notifyDataSetChanged()
+            }
+        }
     }
+
 
     private fun saveIngredients(ingredient: String, quantity: String, unit: String) {
         if (ingredient.isNotEmpty() && quantity.isNotEmpty() && unit.isNotEmpty()) {
-            if (ingredient in ingredients) {
-                lifecycleScope.launch(Dispatchers.IO) {
-                    SharedPreferencesManager.getUsername(requireContext())
-                        ?.let {
-                            homeViewModel.addIngredient(
-                                it,
-                                ingredient,
-                                quantity,
-                                unit
-                            )
-                        }
+            lifecycleScope.launch(Dispatchers.IO) {
+                // Retrieve the username from SharedPreferences
+                val username = SharedPreferencesManager.getUsername(requireContext())
+                if (username.isNullOrEmpty()) {
+                    Log.e("InventoryFragment", "No username found in SharedPreferences!")
+                    return@launch
+                } else {
+                    Log.d("InventoryFragment", "Username retrieved: $username")
+                }
+
+                // Switch back to Main thread when accessing the ViewModel
+                withContext(Dispatchers.Main) {
+                    homeViewModel.addIngredient(
+                        username,
+                        ingredient,
+                        quantity,
+                        unit
+                    )
+                    Log.d(
+                        "InventoryFragment",
+                        "saveIngredients: addIngredient called on Main thread for username: $username"
+                    )
+                }
+            }
+        }
+    }
+
+    private fun updateIngredientInUI(ingredientName: String, newQuantity: String, newUnit: String) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            // Retrieve username from SharedPreferences.
+            val username = SharedPreferencesManager.getUsername(requireContext())
+            if (username.isNullOrEmpty()) {
+                Log.e("InventoryFragment", "No username found in SharedPreferences!")
+                return@launch
+            }
+            // Call HomeViewModel updateIngredient method.
+            homeViewModel.updateIngredient(username, ingredientName, newQuantity, newUnit)
+            // Update the local list if needed.
+            val index = inventoryList.indexOfFirst { it.name.trim().equals(ingredientName.trim(), ignoreCase = true) }
+            if (index != -1) {
+                inventoryList[index] = InventoryItem(ingredientName, newQuantity, newUnit)
+                withContext(Dispatchers.Main) {
+                    adapter.notifyItemChanged(index)
+                }
+            }
+        }
+    }
+
+
+    private fun removeIngredientInUI(ingredientName: String) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val username = SharedPreferencesManager.getUsername(requireContext())
+            if (username.isNullOrEmpty()) {
+                Log.e("InventoryFragment", "No username found in SharedPreferences!")
+                return@launch
+            }
+            // Call ViewModel method to remove the ingredient.
+            homeViewModel.removeIngredient(username, ingredientName)
+            // Optionally, update your local list.
+            val index = inventoryList.indexOfFirst {
+                it.name.trim().equals(ingredientName.trim(), ignoreCase = true)
+            }
+            if (index != -1) {
+                inventoryList.removeAt(index)
+                withContext(Dispatchers.Main) {
+                    adapter.notifyItemRemoved(index)
                 }
             }
         }
