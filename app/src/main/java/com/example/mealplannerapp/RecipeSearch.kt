@@ -41,6 +41,44 @@ object RecipeSearch {
      * @param apiKey Your Spoonacular API key.
      * @return A list of RecipeSummary objects or null if an error occurs.
      */
+    data class ComplexSearchResult(
+        val results: List<RecipeSummary>,
+        val offset: Int,
+        val number: Int,
+        val totalResults: Int
+    )
+
+    /**
+     * Searches for recipes by a text query (e.g., dish name) using the Spoonacular complexSearch endpoint.
+     *21
+     * @return A list of RecipeSummary objects or null if an error occurs.
+     */
+    fun searchRecipesByQuery(
+        query: String,
+        number: Int = 15,
+        apiKey: String = "0c2296339d27412a8d9afdf7557ee6a7"
+    ): List<RecipeSummary>? {
+        val baseUrl = "https://api.spoonacular.com/recipes/complexSearch"
+        val urlBuilder = baseUrl.toHttpUrlOrNull()?.newBuilder() ?: return null
+        urlBuilder.addQueryParameter("query", query)
+        urlBuilder.addQueryParameter("number", number.toString())
+        urlBuilder.addQueryParameter("apiKey", apiKey)
+
+        val request = Request.Builder()
+            .url(urlBuilder.build())
+            .build()
+
+        client.newCall(request).execute().use { response ->
+            if (!response.isSuccessful) {
+                println("Error fetching recipes: ${response.code}")
+                return null
+            }
+            val responseBody = response.body?.string() ?: return null
+            val wrapper = gson.fromJson(responseBody, ComplexSearchResult::class.java)
+            return wrapper.results
+        }
+    }
+
     fun searchRecipesByIngredients(
         ingredients: List<String>,
         number: Int = 50,
