@@ -43,12 +43,14 @@
         app:layout_constraintTop_toBottomOf="@+id/roundedRectangleView" />
 
     <Spinner
-        android:id="@+id/spinner_sort"
+        android:id="@+id/spinner_sort_ingredient"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_marginTop="20dp"
         android:layout_marginEnd="40dp"
-        android:background="@drawable/sort"
+        android:dropDownSelector="@drawable/sort"
+        android:foreground="@drawable/sort"
+        android:src="@drawable/sort"
         android:contentDescription="Sort Button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/roundedRectangleView" />

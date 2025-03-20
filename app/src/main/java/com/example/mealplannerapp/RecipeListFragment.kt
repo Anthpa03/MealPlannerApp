@@ -1,16 +1,9 @@
 package com.example.mealplannerapp
 
-import android.R
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.TextView
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mealplannerapp.databinding.FragmentRecipeListBinding
@@ -19,19 +12,15 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 
-class RecipeListFragment : Fragment() {
+class RecipeListFragment : BaseFragment<FragmentRecipeListBinding>(FragmentRecipeListBinding::inflate) {
 
-    private lateinit var binding: FragmentRecipeListBinding
     private lateinit var adapter: RecipeAdapter  // Adapter now takes RecipeDisplayInfo items
     private var fullRecipeList = listOf<RecipeSearch.RecipeDisplayInfo>()
     private var filteredRecipeList = mutableListOf<RecipeSearch.RecipeDisplayInfo>()
     private val API_KEY = "0c2296339d27412a8d9afdf7557ee6a7"
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        binding = FragmentRecipeListBinding.inflate(inflater, container, false)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         // Retrieve the search query and display it in the search EditText
         val searchQuery = arguments?.getString("search_query") ?: ""
@@ -52,37 +41,22 @@ class RecipeListFragment : Fragment() {
             (activity as? HomeActivity)?.navigateToFragment(FilterListFragment())
         }
 
-        // Initialize sorting options for spinner
-        val sortOptions = listOf("Default", "Ascending", "Descending")
-        val spinnerAdapter =
-            ArrayAdapter(requireContext(), R.layout.simple_spinner_dropdown_item, sortOptions)
-        binding.spinnerSort.adapter = spinnerAdapter
-
-        // Handle sorting selection
-        binding.spinnerSort.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>?,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                (view as TextView).text = null
-                when (position) {
-                    0 -> sortRecipes("default")
-                    1 -> sortRecipes("ascending")
-                    2 -> sortRecipes("descending")
-                }
+        (activity as? HomeActivity)?.setupSpinner(binding.spinnerSort) { position ->
+            when (position) {
+                0 -> sortRecipes("default")
+                1 -> sortRecipes("ascending")
+                2 -> sortRecipes("descending")
             }
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
-        return binding.root
     }
 
     private fun setupRecyclerView() {
-        adapter = RecipeAdapter(filteredRecipeList) {}
+        val activity = requireActivity() as HomeActivity
+        adapter = RecipeAdapter(filteredRecipeList, activity)
         binding.recyclerViewRecipes.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerViewRecipes.adapter = adapter
     }
+
 
     private fun setupSearchListener() {
         binding.editTextSearch.addTextChangedListener(object : TextWatcher {

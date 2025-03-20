@@ -1,5 +1,6 @@
 package com.example.mealplannerapp
 
+import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -8,7 +9,7 @@ import com.example.mealplannerapp.databinding.RecyclerViewCardBinding
 
 class RecipeAdapter(
     private val recipes: MutableList<RecipeSearch.RecipeDisplayInfo>,
-    private val onItemClick: (RecipeSearch.RecipeDisplayInfo) -> Unit
+    private val activity: HomeActivity // Pass HomeActivity reference
 ) : RecyclerView.Adapter<RecipeAdapter.RecipeViewHolder>() {
 
     inner class RecipeViewHolder(val binding: RecyclerViewCardBinding) : RecyclerView.ViewHolder(binding.root)
@@ -35,7 +36,17 @@ class RecipeAdapter(
             .into(holder.binding.imageViewRecipeIc)
 
         holder.binding.buttonViewRecipe.setOnClickListener {
-            onItemClick(recipe)
+            val bundle = Bundle().apply {
+                putString("title", recipe.title)
+                putString("cookTime", recipe.cookTime)
+                putString("imageUrl", recipe.imageUrl)
+                // Needs info for instructions & ingredients from RecipeSearch.kt
+            }
+
+            val fragment = RecipeDetailFragment()
+            fragment.arguments = bundle
+
+            activity.navigateToFragment(fragment)
         }
     }
 

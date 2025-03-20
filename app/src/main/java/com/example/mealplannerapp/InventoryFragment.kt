@@ -9,19 +9,15 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.Gravity
-import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
-import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
-import android.widget.TextView
 import android.widget.Toast
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -32,8 +28,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class InventoryFragment : Fragment() {
-    private lateinit var binding: FragmentInventoryBinding
+class InventoryFragment : BaseFragment<FragmentInventoryBinding>(FragmentInventoryBinding::inflate) {
     private lateinit var adapter: InventoryAdapter
     private lateinit var recyclerView: RecyclerView
     private val inventoryList = mutableListOf<InventoryItem>()
@@ -79,15 +74,9 @@ class InventoryFragment : Fragment() {
         "Pint (pt)", "Quart (qt)", "Gallon (gal)", "Milliliter (ml)", "Liter (l)",
         "Ounce (oz)", "Pound (lb)", "Gram (g)", "Kilogram (kg)"
     )
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        binding = FragmentInventoryBinding.inflate(inflater, container, false)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         recyclerView = binding.recyclerViewIngredients
         setupRecyclerView()
@@ -98,30 +87,13 @@ class InventoryFragment : Fragment() {
             showBottomDialog()
         }
 
-        // Initialize sorting options for spinner
-        val sortOptions = listOf("Default", "Quantity Ascending", "Quantity Descending")
-        val spinnerAdapter =
-            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, sortOptions)
-        binding.spinnerSort.adapter = spinnerAdapter
-
-        // Handle sorting selection
-        binding.spinnerSort.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>?,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                (view as TextView).text = null
-                when (position) {
-                    0 -> sortIngredients("default")
-                    1 -> sortIngredients("ascending")
-                    2 -> sortIngredients("descending")
-                }
+        (activity as? HomeActivity)?.setupSpinner(binding.spinnerSortIngredient) { position ->
+            when (position) {
+                0 -> sortIngredients("default")
+                1 -> sortIngredients("ascending")
+                2 -> sortIngredients("descending")
             }
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
-        return binding.root
     }
 
     private fun sortIngredients(order: String) {
