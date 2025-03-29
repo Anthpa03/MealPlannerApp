@@ -1,59 +1,43 @@
 package com.example.mealplannerapp
 
+import android.os.Build
 import android.os.Bundle
-import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
+import android.widget.Toast
+import androidx.annotation.RequiresApi
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.mealplannerapp.databinding.FragmentCalendarBinding
+import com.harrywhewell.scrolldatepicker.DayScrollDatePicker
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 
-/**
- * A simple [Fragment] subclass.
- * Use the [CalendarFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
-class CalendarFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
-
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_calendar, container, false)
-    }
-
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment CalendarFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            CalendarFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
+class CalendarFragment : BaseFragment<FragmentCalendarBinding>(FragmentCalendarBinding::inflate) {
+    private lateinit var adapter: RecipeAdapter
+    //private var savedRecipeList = mutableListOf<RecipeSearch.RecipeDisplayInfo>()
+    private var savedRecipeList = mutableListOf(
+        RecipeSearch.RecipeDisplayInfo("Spaghetti Bolognese", "https://example.com/spaghetti.jpg", "12 mins"),
+        RecipeSearch.RecipeDisplayInfo("Chicken Curry", "https://example.com/chicken_curry.jpg", "18 mins"),
+        RecipeSearch.RecipeDisplayInfo("Vegetable Stir Fry", "https://example.com/veg_stir_fry.jpg", "8 mins")
+    )
+    private var mealDatePicker: DayScrollDatePicker? = null
+    @RequiresApi(Build.VERSION_CODES.O)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        mealDatePicker = binding.mealDatePicker
+        mealDatePicker?.getSelectedDate { date ->
+            if (date != null) {
+                Toast.makeText(requireContext(), "Current Date: $date", Toast.LENGTH_SHORT).show()
+                //TODO:implement logic to show saved recipes based on date selected;
+                // likely have to make a new function in RecipeAdapter for this
             }
+        }
+        setupRecyclerView()
+        binding.textViewResults.text = "Showing ${savedRecipeList.size} ingredients"
+    }
+
+    private fun setupRecyclerView() {
+        val activity = requireActivity() as HomeActivity
+        adapter = RecipeAdapter(savedRecipeList, activity)
+        binding.recyclerViewRecipes.layoutManager = LinearLayoutManager(requireContext())
+        binding.recyclerViewRecipes.adapter = adapter
     }
 }

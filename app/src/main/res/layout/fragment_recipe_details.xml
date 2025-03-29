@@ -34,6 +34,21 @@
         app:layout_constraintStart_toStartOf="@+id/imageViewRecipe"
         app:layout_constraintTop_toTopOf="@+id/imageViewRecipe" />
 
+    <ImageButton
+        android:id="@+id/imageButtonAdd"
+        style="@style/Widget.AppCompat.ImageButton"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="5dp"
+        android:background="@drawable/green_circle"
+        android:contentDescription="Add"
+        android:scaleType="fitStart"
+        android:src="@drawable/add"
+        app:layout_constraintBottom_toBottomOf="@+id/imageViewRecipe"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:tint="@color/white" />
+
     <TextView
         android:id="@+id/textViewRecipeTitle"
         android:layout_width="wrap_content"

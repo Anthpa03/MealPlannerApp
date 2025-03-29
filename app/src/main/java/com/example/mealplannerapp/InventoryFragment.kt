@@ -146,7 +146,7 @@ class InventoryFragment : BaseFragment<FragmentInventoryBinding>(FragmentInvento
         val editTextQuantity = dialog.findViewById<EditText>(R.id.editText_quantity)
         val autoCompleteUnit = dialog.findViewById<AutoCompleteTextView>(R.id.autoCompleteTextView_unit)
         val buttonAddItem = dialog.findViewById<Button>(R.id.button_add_item)
-        val buttonRemoveItem = dialog.findViewById<Button>(R.id.button_remove_item)
+        val buttonRemoveItem = dialog.findViewById<Button>(R.id.button_add_recipe)
         val buttonExit = dialog.findViewById<ImageButton>(R.id.cancelButton)
 
         // Initially disable quantity and unit input.

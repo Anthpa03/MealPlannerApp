@@ -44,6 +44,7 @@ android {
 
 dependencies {
 
+    implementation ("com.github.gastricspark:scrolldatepicker:0.0.1")
 
     implementation ("io.realm.kotlin:library-base:3.0.0")
 
@@ -55,12 +56,12 @@ dependencies {
     implementation("androidx.navigation:navigation-fragment:2.8.7")
     kapt("com.google.dagger:dagger-compiler:2.55")
 
-// Dagger Android
+    // Dagger Android
     api("com.google.dagger:dagger-android:2.55")
     api("com.google.dagger:dagger-android-support:2.55")
     kapt("com.google.dagger:dagger-android-processor:2.55")
 
-// Dagger - Hilt
+    // Dagger - Hilt
     implementation("com.google.dagger:hilt-android:2.55")
     kapt("com.google.dagger:hilt-android-compiler:2.55")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")

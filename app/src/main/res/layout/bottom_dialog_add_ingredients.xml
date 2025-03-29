@@ -7,7 +7,7 @@
     android:background="@drawable/dialog_background">
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/button_remove_item"
+        android:id="@+id/button_add_recipe"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="36dp"
@@ -35,7 +35,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/addItemTextView"
+        android:id="@+id/addRecipeTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="50dp"
@@ -75,7 +75,7 @@
         android:textColorHint="#6E6C6C"
         android:textSize="16sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/addItemTextView"
+        app:layout_constraintTop_toBottomOf="@+id/addRecipeTextView"
         app:layout_constraintWidth_percent="0.55" />
 
     <EditText

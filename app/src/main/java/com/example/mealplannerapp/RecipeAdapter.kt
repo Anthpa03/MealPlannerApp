@@ -40,7 +40,6 @@ class RecipeAdapter(
                 putString("title", recipe.title)
                 putString("cookTime", recipe.cookTime)
                 putString("imageUrl", recipe.imageUrl)
-                // Needs info for instructions & ingredients from RecipeSearch.kt
             }
 
             val fragment = RecipeDetailFragment()
