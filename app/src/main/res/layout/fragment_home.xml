@@ -103,110 +103,100 @@
         android:id="@+id/textView_categories"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="300dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="2dp"
         android:text="Categories"
         android:textColor="#000000"
         android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/button_category1"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageView_bg_home" />
 
-    <Button
-        android:id="@+id/button_seeall_categories"
-        style="@style/Widget.Material3.Button.TextButton"
-        android:layout_width="wrap_content"
+    <HorizontalScrollView
+        android:id="@+id/horizontalScrollView_categories"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="220dp"
-        android:text="See All"
-        android:textColor="@color/darkRed"
-        android:textSize="14sp"
-        app:layout_constraintBottom_toTopOf="@+id/button_category3"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/textView_categories"
-        app:layout_constraintTop_toBottomOf="@+id/imageView_bg_home" />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/button_category1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
-        android:layout_marginTop="35dp"
-        android:text="Category1"
-        android:textColor="@color/black"
-        android:textSize="15sp"
-        app:backgroundTint="@android:color/transparent"
-        app:cornerRadius="30dp"
-        app:layout_constraintEnd_toStartOf="@+id/button_category2"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        android:scrollbars="none"
+        app:layout_constraintTop_toBottomOf="@+id/textView_categories"
+        app:layout_constraintBottom_toTopOf="@+id/textView_recently_used"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageView_bg_home"
-        app:rippleColor="#33AAAAAA"
-        app:strokeColor="@color/dullRed"
-        app:strokeWidth="2dp" />
+        app:layout_constraintEnd_toEndOf="parent">
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/button_category2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
-        android:layout_marginTop="35dp"
-        android:text="Category2"
-        android:textColor="@color/black"
-        android:textSize="15sp"
-        app:backgroundTint="@android:color/transparent"
-        app:cornerRadius="30dp"
-        app:layout_constraintBottom_toTopOf="@+id/imageView4"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageView_bg_home"
-        app:layout_constraintVertical_bias="0.019"
-        app:rippleColor="#33AAAAAA"
-        app:strokeColor="@color/dullRed"
-        app:strokeWidth="2dp" />
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/button_category3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
-        android:layout_marginTop="35dp"
-        android:text="Category3"
-        android:textColor="@color/black"
-        android:textSize="15sp"
-        app:backgroundTint="@android:color/transparent"
-        app:cornerRadius="30dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/button_category2"
-        app:layout_constraintTop_toBottomOf="@+id/imageView_bg_home"
-        app:rippleColor="#33AAAAAA"
-        app:strokeColor="@color/dullRed"
-        app:strokeWidth="2dp" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_category1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="Category1"
+                android:textColor="@color/black"
+                android:textSize="15sp"
+                app:backgroundTint="@android:color/transparent"
+                app:cornerRadius="30dp"
+                app:rippleColor="#33AAAAAA"
+                app:strokeColor="@color/dullRed"
+                app:strokeWidth="2dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_category2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="Category2"
+                android:textColor="@color/black"
+                android:textSize="15sp"
+                app:backgroundTint="@android:color/transparent"
+                app:cornerRadius="30dp"
+                app:rippleColor="#33AAAAAA"
+                app:strokeColor="@color/dullRed"
+                app:strokeWidth="2dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_category3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="Category3"
+                android:textColor="@color/black"
+                android:textSize="15sp"
+                app:backgroundTint="@android:color/transparent"
+                app:cornerRadius="30dp"
+                app:rippleColor="#33AAAAAA"
+                app:strokeColor="@color/dullRed"
+                app:strokeWidth="2dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_category4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="Category4"
+                android:textColor="@color/black"
+                android:textSize="15sp"
+                app:backgroundTint="@android:color/transparent"
+                app:cornerRadius="30dp"
+                app:rippleColor="#33AAAAAA"
+                app:strokeColor="@color/dullRed"
+                app:strokeWidth="2dp" />
+        </LinearLayout>
+    </HorizontalScrollView>
 
     <TextView
         android:id="@+id/textView_recently_used"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="15dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginBottom="5dp"
         android:text="Recently Used Recipes"
         android:textColor="#000000"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/imageView4"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button_category1" />
-
-    <Button
-        android:id="@+id/button_seeall_recipes"
-        style="@style/Widget.Material3.Button.TextButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="150dp"
-        android:text="See All"
-        android:textColor="@color/darkRed"
-        android:textSize="14sp"
-        app:layout_constraintBottom_toTopOf="@+id/imageView4"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/textView_recently_used"
-        app:layout_constraintTop_toBottomOf="@+id/button_category3" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <ImageView
         android:id="@+id/imageView4"

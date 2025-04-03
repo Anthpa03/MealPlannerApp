@@ -29,6 +29,7 @@ class HomeActivity : AppCompatActivity(){
                 R.id.home -> replaceFragment(HomeFragment())
                 R.id.inventory -> replaceFragment(InventoryFragment())
                 R.id.calendar -> replaceFragment(CalendarFragment())
+                R.id.settings -> replaceFragment(SettingsFragment())
             }
             true
         }
@@ -65,6 +66,12 @@ class HomeActivity : AppCompatActivity(){
 
     fun navigateToFragment(fragment: Fragment) {
         supportFragmentManager.beginTransaction()
+            .setCustomAnimations(
+                R.anim.slide_in,
+                R.anim.slide_out,
+                R.anim.slide_in,
+                R.anim.slide_out
+            )
             .replace(R.id.frame_layout, fragment)
             .addToBackStack(null)
             .commit()

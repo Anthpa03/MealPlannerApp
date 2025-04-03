@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageButton
+        android:id="@+id/imageButtonBack"
+        style="@style/Widget.AppCompat.ImageButton"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="10dp"
+        android:background="#00FFFFFF"
+        android:backgroundTint="#00FFFFFF"
+        android:contentDescription="Return"
+        android:scaleType="fitStart"
+        android:src="@drawable/back_arrow"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
+        app:layout_constraintEnd_toStartOf="@+id/editProfileTextView"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0"
+        app:tint="@color/reddishOrange" />
+
+    <LinearLayout
+        android:id="@+id/linearLayout2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:orientation="vertical"
+        android:padding="15dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/editProfileTextView">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/settings_card"
+            android:padding="11dp">
+
+            <ImageView
+                android:id="@+id/editUsernameIcon"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/orange_circle"
+                android:contentDescription="Change Username Icon"
+                android:padding="12dp"
+                android:src="@drawable/person" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="20dp"
+                android:layout_toEndOf="@id/editUsernameIcon"
+                android:text="Change Username"
+                android:textColor="#333333"
+                android:textStyle="bold" />
+
+            <ImageButton
+                android:id="@+id/editProfileImageButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:backgroundTint="#FFFFFF"
+                android:contentDescription="Change Username Button"
+                android:src="@drawable/arrow_right" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/settings_card"
+            android:padding="11dp">
+
+            <ImageView
+                android:id="@+id/editPasswordImageView"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/orange_circle"
+                android:contentDescription="password change icon"
+                android:padding="12dp"
+                android:src="@drawable/security" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="20dp"
+                android:layout_toEndOf="@id/editPasswordImageView"
+                android:text="Change Password"
+                android:textColor="#333333"
+                android:textStyle="bold" />
+
+            <ImageButton
+                android:id="@+id/changePasswordImageButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:backgroundTint="#FFFFFF"
+                android:contentDescription="Change Password Button"
+                android:src="@drawable/arrow_right" />
+        </RelativeLayout>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/settings_card"
+            android:padding="11dp">
+
+            <ImageView
+                android:id="@+id/deleteImageView"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/red_circle"
+                android:contentDescription="account deletion icon"
+                android:padding="12dp"
+                android:src="@drawable/delete" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="20dp"
+                android:layout_toEndOf="@id/deleteImageView"
+                android:text="Delete Account"
+                android:textColor="@color/reddishOrange"
+                android:textStyle="bold" />
+
+            <ImageButton
+                android:id="@+id/deleteImageButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:backgroundTint="#FFFFFF"
+                android:contentDescription="Delete account Button"
+                android:src="@drawable/arrow_right" />
+        </RelativeLayout>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/editProfileTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="117dp"
+        android:text="Edit Profile"
+        android:textColor="#333333"
+        android:textSize="32sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

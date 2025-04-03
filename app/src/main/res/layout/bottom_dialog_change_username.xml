@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/dialog_background">
+
+    <ImageView
+        android:id="@+id/imageView_remove"
+        android:layout_width="70dp"
+        android:layout_height="wrap_content"
+        android:scaleType="centerCrop"
+        android:src="@drawable/remove"
+        app:tint="@color/darkRed"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/changeUsernameTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:padding="8dp"
+        android:text="Change Your Username"
+        android:textAlignment="viewStart"
+        android:textColor="@color/dullRed"
+        android:textSize="25dp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageView_remove" />
+
+    <ImageButton
+        android:id="@+id/cancelButton"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="96dp"
+        android:background="@android:color/transparent"
+        android:paddingBottom="10dp"
+        android:src="@drawable/cross"
+        android:scaleType="fitCenter"
+        android:contentDescription="Exit View"
+        app:layout_constraintStart_toEndOf="@+id/imageView_remove"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="@color/darkRed" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/buttonChangeUsername"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="Confirm Change"
+        android:textColor="@color/darkRed"
+        app:backgroundTint="@color/white"
+        app:cornerRadius="30dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/newUsernameEditText"
+        app:rippleColor="#33AAAAAA"
+        app:strokeColor="@color/dullRed"
+        app:strokeWidth="2dp" />
+
+    <TextView
+        android:id="@+id/changeUsernameInfoTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="5dp"
+        android:text="Enter your new Username Below."
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/changeUsernameTextView" />
+
+    <EditText
+        android:id="@+id/newUsernameEditText"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="10dp"
+        android:ems="10"
+        android:hint="New Username"
+        android:inputType="text"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/changeUsernameInfoTextView" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

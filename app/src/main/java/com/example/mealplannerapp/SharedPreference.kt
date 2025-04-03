@@ -21,6 +21,20 @@ object SharedPreferencesManager {
         editor.apply()
     }
 
+    fun saveUsername(context: Context, username: String) {
+        val sharedPreferences = getSharedPreferences(context)
+        val editor = sharedPreferences.edit()
+        editor.putString(KEY_USERNAME, username)
+        editor.apply()
+    }
+
+    fun savePassword(context: Context, password: String) {
+        val sharedPreferences = getSharedPreferences(context)
+        val editor = sharedPreferences.edit()
+        editor.putString(KEY_PASSWORD, password)
+        editor.apply()
+    }
+
     fun getUsername(context: Context): String? {
         val sharedPreferences = getSharedPreferences(context)
         return sharedPreferences.getString(KEY_USERNAME, null)

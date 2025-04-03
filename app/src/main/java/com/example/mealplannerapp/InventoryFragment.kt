@@ -145,7 +145,7 @@ class InventoryFragment : BaseFragment<FragmentInventoryBinding>(FragmentInvento
         val autoCompleteIngredient = dialog.findViewById<AutoCompleteTextView>(R.id.autoCompleteTextView_ingredient)
         val editTextQuantity = dialog.findViewById<EditText>(R.id.editText_quantity)
         val autoCompleteUnit = dialog.findViewById<AutoCompleteTextView>(R.id.autoCompleteTextView_unit)
-        val buttonAddItem = dialog.findViewById<Button>(R.id.button_add_item)
+        val buttonAddItem = dialog.findViewById<Button>(R.id.button_change_username)
         val buttonRemoveItem = dialog.findViewById<Button>(R.id.button_add_recipe)
         val buttonExit = dialog.findViewById<ImageButton>(R.id.cancelButton)
 
