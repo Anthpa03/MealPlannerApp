@@ -134,6 +134,39 @@ class HomeViewModel @Inject constructor(private val repository:MongoRepository):
         }
     }
 
+    // New method to save a searched recipe to the local Realm.
+    fun saveRecipeForUser(
+        username: String,
+        recipeId: Int,
+        name: String,
+        ingredients: List<Ingredient>,
+        cookTime: String,
+        instructions: String,
+        image: String
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            // Retrieve the user using the repository.
+            val user = repository.getUserByUsername(username)
+            if (user == null) {
+                Log.e("HomeViewModel", "User not found for username: '$username'")
+                return@launch
+            }
+            // Create a new SavedRecipe object.
+            val savedRecipe = SavedRecipe().apply {
+                this.recipeId = recipeId
+                this.name = name
+                this.cookTime = cookTime
+                this.instructions = instructions
+                this.image = image
+                // Add all ingredients to the RealmList.
+                this.ingredients.addAll(ingredients)
+                // saveDate is automatically set to the current date by default.
+            }
+            // Delegate saving the recipe to the repository.
+            repository.addSavedRecipe(user._id, savedRecipe)
+            Log.d("HomeViewModel", "Saved recipe '$name' for user: ${user.Username}")
+        }
+    }
 
     fun removeIngredient(username: String, ingredientName: String) {
         viewModelScope.launch(Dispatchers.IO) {

@@ -153,24 +153,36 @@ class InventoryFragment : BaseFragment<FragmentInventoryBinding>(FragmentInvento
         editTextQuantity.isEnabled = false
         autoCompleteUnit.isEnabled = false
 
-        val ingredientsAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, ingredients)
-        autoCompleteIngredient.setAdapter(ingredientsAdapter)
-        val unitsAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, units)
-        autoCompleteUnit.setAdapter(unitsAdapter)
+        // Instead of using a hardcoded list, set up dynamic suggestions:
+        autoCompleteIngredient.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                val query = s?.toString() ?: ""
+                if (query.length >= 2) { // Only search if at least 2 characters are entered.
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        val suggestions = RecipeSearch.getIngredientSuggestions(query)
+                        withContext(Dispatchers.Main) {
+                            suggestions?.let {
+                                val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, it)
+                                autoCompleteIngredient.setAdapter(adapter)
+                                adapter.notifyDataSetChanged()
+                            }
+                        }
+                    }
+                }
+            }
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) { }
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) { }
+        })
 
         // Determine if this dialog is for editing an existing ingredient.
         if (existingIngredient != null) {
-            // Prefill fields for editing.
             autoCompleteIngredient.setText(existingIngredient, false)
             autoCompleteIngredient.isEnabled = false
             editTextQuantity.isEnabled = true
             autoCompleteUnit.isEnabled = true
-            // Change the primary button text to "Edit".
             buttonAddItem.text = "Edit"
-            // Make the remove button visible when editing.
             buttonRemoveItem.visibility = View.VISIBLE
         } else {
-            // Hide the remove button when adding a new ingredient.
             buttonRemoveItem.visibility = View.GONE
         }
         if (existingQuantity != null) editTextQuantity.setText(existingQuantity)
@@ -186,8 +198,8 @@ class InventoryFragment : BaseFragment<FragmentInventoryBinding>(FragmentInvento
             override fun afterTextChanged(s: Editable?) {
                 autoCompleteUnit.isEnabled = !s.isNullOrEmpty()
             }
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) { }
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) { }
         })
 
         // Primary "Add" or "Edit" button action.
@@ -202,12 +214,10 @@ class InventoryFragment : BaseFragment<FragmentInventoryBinding>(FragmentInvento
                 Toast.makeText(requireContext(), "Please enter the quantity", Toast.LENGTH_SHORT).show()
             } else {
                 if (position != null) {
-                    // Call update logic if editing.
                     updateIngredientInUI(ingredient, quantity, unit)
                     inventoryList[position] = InventoryItem(ingredient, quantity, unit)
                     adapter.notifyItemChanged(position)
                 } else {
-                    // Otherwise, add a new ingredient.
                     val unitFinal = if (unit.isEmpty()) "" else unit
                     saveIngredients(ingredient, quantity, unitFinal)
                     val newIngredient = InventoryItem(ingredient, quantity, unitFinal)
@@ -245,9 +255,6 @@ class InventoryFragment : BaseFragment<FragmentInventoryBinding>(FragmentInvento
         dialog.window?.attributes?.windowAnimations = R.style.DialogAnimation
         dialog.window?.setGravity(Gravity.BOTTOM)
     }
-
-
-
 
     private fun loadInventoryData() {
         lifecycleScope.launch(Dispatchers.IO) {

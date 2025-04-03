@@ -14,6 +14,7 @@ interface MongoRepository {
     suspend fun updateIngredient(userId: ObjectId, ingredientName: String, newQuantity: String, newUnit: String)
     suspend fun removeIngredient(userId: ObjectId, ingredientName: String)
     suspend fun addIngredient(userId: ObjectId, ingredientName: String, quantity: String, unit: String)
+    suspend fun addSavedRecipe(userId: ObjectId, recipe: SavedRecipe)
     suspend fun getUserByUsername(username: String): User?
 
 }

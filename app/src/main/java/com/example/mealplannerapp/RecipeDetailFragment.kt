@@ -1,10 +1,12 @@
 package com.example.mealplannerapp
 
+
 import android.app.Dialog
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -12,104 +14,152 @@ import android.view.Window
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.Toast
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.example.mealplannerapp.databinding.FragmentRecipeDetailsBinding
 import com.harrywhewell.scrolldatepicker.DayScrollDatePicker
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import dagger.hilt.android.AndroidEntryPoint
+import java.util.Locale
 
+@AndroidEntryPoint
 class RecipeDetailFragment : BaseFragment<FragmentRecipeDetailsBinding>(FragmentRecipeDetailsBinding::inflate) {
+
     private lateinit var ingredientAdapter: IngredientAdapter
-    private var ingredientList: List<RecipeIngredient> = listOf()
+    // Hold the current recipe details for later use.
+    private var currentRecipe: RecipeSearch.RecipeDisplayInfo? = null
+
+    // Inject HomeViewModel to retrieve user's owned ingredients.
+    private val homeViewModel: HomeViewModel by viewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        //TODO:replace example ingredients with real ingredients
-        val recipeIngredients = listOf(
-            RecipeIngredient("Flour", 250.0, "g"),
-            RecipeIngredient("Cheese", 200.0, "g"),
-            RecipeIngredient("Basil", .5, "tsp"),
-            RecipeIngredient("Tomato Sauce", 100.0, "ml"),
-            RecipeIngredient("Salt", 1.0, "tsp"),
-            RecipeIngredient("Oregano", .5, "tsp"),
-            RecipeIngredient("Yeast", 10.0, "g"),
-            RecipeIngredient("Olive Oil", 1.0, "tbsp")
-        )
+        // Retrieve the recipeId passed from RecipeAdapter.
+        val recipeId = arguments?.getInt("recipeId") ?: 0
+        if (recipeId == 0) {
+            Log.e("RecipeDetailFragment", "Invalid recipeId provided.")
+            requireActivity().supportFragmentManager.popBackStack()
+            return
+        }
 
-        // Get user's ingredients and check availability
-        ingredientList = checkIngredientAvailability(recipeIngredients)
+        // Initially, show the progress bar and hide the recipe details.
+        binding.progressBar2.visibility = View.VISIBLE
+        binding.imageViewRecipe.visibility = View.INVISIBLE
+        binding.textViewRecipeTitle.visibility = View.INVISIBLE
+        binding.textViewCookTime.visibility = View.INVISIBLE
+        binding.textViewInstructions.visibility = View.INVISIBLE
+        binding.recyclerViewIngredients.visibility = View.INVISIBLE
+        binding.buttonIngredients.visibility = View.INVISIBLE
+        binding.buttonInstructions.visibility = View.INVISIBLE
+        binding.imageButtonAdd.visibility = View.INVISIBLE
 
-        // Retrieve arguments passed from RecipeAdapter
-        val title = arguments?.getString("title")
-        val cookTime = arguments?.getString("cookTime")
-        val imageUrl = arguments?.getString("imageUrl")
-
-        // Set data in the UI
-        binding.textViewRecipeTitle.text = title
-        binding.textViewCookTime.text = "Cook Time: $cookTime"
+        // Enable scrolling on the instructions text view.
         binding.textViewInstructions.movementMethod = ScrollingMovementMethod()
 
-        // Load recipe image
-        Glide.with(this)
-            .load(imageUrl)
-            .placeholder(R.drawable.pizza)
-            .into(binding.imageViewRecipe)
+        // Initialize the RecyclerView adapter with an empty list.
+        ingredientAdapter = IngredientAdapter(mutableListOf())
+        binding.recyclerViewIngredients.layoutManager = LinearLayoutManager(requireContext())
+        binding.recyclerViewIngredients.adapter = ingredientAdapter
 
-        setupRecyclerView()
+        // Fetch the recipe details asynchronously using only the recipeId.
+        lifecycleScope.launch {
+            val details = withContext(Dispatchers.IO) {
+                RecipeSearch.getRecipeDetails(recipeId)
+            }
+            if (details != null) {
+                // Update UI elements with the fetched details.
+                binding.textViewRecipeTitle.text = details.title
+                binding.textViewCookTime.text = "Cook Time: ${details.readyInMinutes} mins"
+                Glide.with(this@RecipeDetailFragment)
+                    .load(details.image)
+                    .placeholder(R.drawable.pizza)
+                    .into(binding.imageViewRecipe)
 
-        // Set Ingredients as the default selected option
-        binding.recyclerViewIngredients.visibility = View.VISIBLE
-        binding.textViewInstructions.visibility = View.GONE
+                // Update the instructions, using a placeholder if needed.
+                binding.textViewInstructions.text = if (!details.instructions.isNullOrEmpty()) {
+                    details.instructions
+                } else {
+                    getString(R.string.placeholder_string)
+                }
 
+                // Retrieve the user's owned ingredients.
+                val username = SharedPreferencesManager.getUsername(requireContext())
+                val userInventory = if (!username.isNullOrEmpty()) {
+                    homeViewModel.getIngredientsForUser(username)
+                } else {
+                    emptyList()
+                }
+                val ownedNames = userInventory.map { it.name }
+
+                // Map the API's extendedIngredients to RecipeIngredient objects,
+                // marking each as available if a matching owned ingredient is found.
+                val newIngredients = details.extendedIngredients.map { apiIngredient ->
+                    RecipeIngredient(
+                        name = apiIngredient.name,
+                        quantityNeeded = apiIngredient.amount,
+                        unit = apiIngredient.unit,
+                        isAvailable = ownedNames.any { normalize(it) == normalize(apiIngredient.name) }
+                    )
+                }
+                // Update the RecyclerView adapter with the new ingredients.
+                ingredientAdapter.updateData(newIngredients)
+
+                // Create a RecipeDisplayInfo object from the fetched details.
+                currentRecipe = RecipeSearch.RecipeDisplayInfo(
+                    title = details.title,
+                    cookTime = "${details.readyInMinutes} mins",
+                    imageUrl = details.image,
+                    recipeId = details.id
+                )
+
+                // Now that data is loaded, hide the progress bar and show the details.
+                binding.progressBar2.visibility = View.GONE
+                binding.imageViewRecipe.visibility = View.VISIBLE
+                binding.textViewRecipeTitle.visibility = View.VISIBLE
+                binding.textViewCookTime.visibility = View.VISIBLE
+                // Show only ingredients by default.
+                binding.recyclerViewIngredients.visibility = View.VISIBLE
+                binding.textViewInstructions.visibility = View.GONE
+                binding.buttonIngredients.visibility = View.VISIBLE
+                binding.buttonInstructions.visibility = View.VISIBLE
+                binding.imageButtonAdd.visibility = View.VISIBLE
+            } else {
+                binding.progressBar2.visibility = View.GONE
+                Toast.makeText(requireContext(), "Failed to load recipe details", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        // Set up the back button to return to the previous screen.
         binding.imageButtonBack.setOnClickListener {
             requireActivity().supportFragmentManager.popBackStack()
         }
 
+        // Toggle between viewing ingredients and instructions.
         binding.buttonIngredients.setOnClickListener {
             binding.recyclerViewIngredients.visibility = View.VISIBLE
             binding.textViewInstructions.visibility = View.GONE
         }
-
         binding.buttonInstructions.setOnClickListener {
             binding.recyclerViewIngredients.visibility = View.GONE
             binding.textViewInstructions.visibility = View.VISIBLE
         }
 
-        // Create RecipeDisplayInfo object
-        val currentRecipe = RecipeSearch.RecipeDisplayInfo(
-            title = title!!,
-            cookTime = cookTime!!,
-            imageUrl = imageUrl!!
-        )
-
-        // Show bottom dialog when add button is clicked
+        // Show the bottom dialog when the add button is clicked.
         binding.imageButtonAdd.setOnClickListener {
-            showBottomDialog(currentRecipe)
+            currentRecipe?.let {
+                showBottomDialog(it)
+            } ?: Toast.makeText(requireContext(), "Recipe details not loaded yet", Toast.LENGTH_SHORT).show()
         }
     }
 
-    private fun getUserIngredients(): Map<String, Double> {
-        //TODO: Replace with database fetching
-        return mapOf(
-            "Flour" to 500.0,
-            "Cheese" to 200.0,
-            "Tomato Sauce" to 100.0
-        )
-    }
-
-    private fun checkIngredientAvailability(recipeIngredients: List<RecipeIngredient>): List<RecipeIngredient> {
-        val userIngredients = getUserIngredients()
-        return recipeIngredients.map { ingredient ->
-            val availableQuantity = userIngredients[ingredient.name] ?: 0.0
-            ingredient.isAvailable = availableQuantity >= ingredient.quantityNeeded
-            ingredient
-        }
-    }
-
-    private fun setupRecyclerView() {
-        ingredientAdapter = IngredientAdapter(ingredientList)
-        binding.recyclerViewIngredients.layoutManager = LinearLayoutManager(requireContext())
-        binding.recyclerViewIngredients.adapter = ingredientAdapter
+    // Helper function to "normalize" an ingredient name for comparison.
+    private fun normalize(name: String): String {
+        return name.trim().lowercase(Locale.getDefault()).removeSuffix("s")
     }
 
     private fun showBottomDialog(recipe: RecipeSearch.RecipeDisplayInfo) {
@@ -123,7 +173,7 @@ class RecipeDetailFragment : BaseFragment<FragmentRecipeDetailsBinding>(Fragment
 
         var selectedDate: String? = null
 
-        // Get selected date from DatePicker
+        // Retrieve the selected date from the DatePicker.
         datePicker?.getSelectedDate { date ->
             selectedDate = date.toString()
         }
@@ -133,11 +183,9 @@ class RecipeDetailFragment : BaseFragment<FragmentRecipeDetailsBinding>(Fragment
                 Toast.makeText(requireContext(), "Please select a date", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-
-            // Save the recipe with the selected date
+            // Save the recipe with the chosen date.
             saveRecipeForDate(recipe, selectedDate!!)
             Toast.makeText(requireContext(), "Recipe saved for $selectedDate", Toast.LENGTH_SHORT).show()
-
             dialog.dismiss()
         }
 
@@ -153,7 +201,25 @@ class RecipeDetailFragment : BaseFragment<FragmentRecipeDetailsBinding>(Fragment
     }
 
     private fun saveRecipeForDate(recipe: RecipeSearch.RecipeDisplayInfo, selectedDate: String) {
-        //TODO:add saving recipe to calendar date functionality
+        // Retrieve the active username.
+        val username = SharedPreferencesManager.getUsername(requireContext())
+        if (username.isNullOrEmpty()) {
+            Toast.makeText(requireContext(), "No username found", Toast.LENGTH_SHORT).show()
+            return
+        }
+        // For this example, we'll pass an empty list for ingredients,
+        // since RecipeDisplayInfo doesn't include detailed ingredients.
+        // You can modify this if you have a detailed recipe to supply.
+        homeViewModel.saveRecipeForUser(
+            username = username,
+            recipeId = recipe.recipeId,
+            name = recipe.title,
+            ingredients = emptyList(), // or pass the actual list if available
+            cookTime = recipe.cookTime,
+            instructions = "",         // You can pass instructions if available
+            image = recipe.imageUrl
+        )
+        Toast.makeText(requireContext(), "Recipe saved!", Toast.LENGTH_SHORT).show()
     }
 
 }

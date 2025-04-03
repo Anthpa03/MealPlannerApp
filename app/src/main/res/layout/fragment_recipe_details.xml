@@ -136,4 +136,14 @@
         app:layout_constraintTop_toBottomOf="@+id/buttonIngredients"
         app:layout_constraintVertical_bias="1.0" />
 
+    <ProgressBar
+        android:id="@+id/progressBar2"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="139dp"
+        android:layout_height="25dp"
+        app:layout_constraintBottom_toBottomOf="@+id/imageViewRecipe"
+        app:layout_constraintEnd_toEndOf="@+id/imageViewRecipe"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/imageViewRecipe" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

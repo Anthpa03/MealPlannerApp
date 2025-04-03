@@ -1,6 +1,7 @@
 package com.example.mealplannerapp
 
 import com.google.gson.Gson
+import kotlinx.coroutines.delay
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
@@ -8,8 +9,10 @@ import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 object RecipeSearch {
     private val client = OkHttpClient()
     private val gson = Gson()
+    // Use the API key injected via BuildConfig
+    private val apiKey: String = BuildConfig.API_KEY
+    private const val rapidApiHost = "spoonacular-recipe-food-nutrition-v1.p.rapidapi.com"
 
-    // Data class representing summary info for recipes returned by findByIngredients
     data class RecipeSummary(
         val id: Int,
         val title: String,
@@ -17,30 +20,28 @@ object RecipeSearch {
         val readyInMinutes: Int
     )
 
-    // Data class representing detailed recipe information
+    data class Ingredient(
+        val name: String,
+        val amount: Double,
+        val unit: String
+    )
+
     data class RecipeDetails(
         val id: Int,
         val title: String,
         val image: String,
-        val readyInMinutes: Int
-        // You can add more fields if needed.
+        val readyInMinutes: Int,
+        val extendedIngredients: List<Ingredient>,
+        val instructions: String?
     )
 
-    // Data class used for displaying information in your RecyclerView
     data class RecipeDisplayInfo(
         val title: String,
         val imageUrl: String,
-        val cookTime: String
+        val cookTime: String,
+        val recipeId: Int
     )
 
-    /**
-     * Searches for recipes that can be made with the given ingredients.
-     *
-     * @param ingredients List of ingredient names.
-     * @param number Number of recipes to return.
-     * @param apiKey Your Spoonacular API key.
-     * @return A list of RecipeSummary objects or null if an error occurs.
-     */
     data class ComplexSearchResult(
         val results: List<RecipeSummary>,
         val offset: Int,
@@ -48,26 +49,22 @@ object RecipeSearch {
         val totalResults: Int
     )
 
-    /**
-     * Searches for recipes by a text query (e.g., dish name) using the Spoonacular complexSearch endpoint.
-     *21
-     * @return A list of RecipeSummary objects or null if an error occurs.
-     */
-    fun searchRecipesByQuery(
-        query: String,
-        number: Int = 15,
-        apiKey: String = "0c2296339d27412a8d9afdf7557ee6a7"
-    ): List<RecipeSummary>? {
-        val baseUrl = "https://api.spoonacular.com/recipes/complexSearch"
+    // Delay before each API call to help avoid rate limiting.
+    private suspend fun rateLimitDelay() {
+        delay(300)  // Delay 300 milliseconds. Adjust if needed.
+    }
+
+    suspend fun searchRecipesByQuery(query: String, number: Int = 15): List<RecipeSummary>? {
+        rateLimitDelay()
+        val baseUrl = "https://$rapidApiHost/recipes/complexSearch"
         val urlBuilder = baseUrl.toHttpUrlOrNull()?.newBuilder() ?: return null
         urlBuilder.addQueryParameter("query", query)
         urlBuilder.addQueryParameter("number", number.toString())
-        urlBuilder.addQueryParameter("apiKey", apiKey)
-
         val request = Request.Builder()
             .url(urlBuilder.build())
+            .addHeader("x-rapidapi-key", apiKey)
+            .addHeader("x-rapidapi-host", rapidApiHost)
             .build()
-
         client.newCall(request).execute().use { response ->
             if (!response.isSuccessful) {
                 println("Error fetching recipes: ${response.code}")
@@ -79,21 +76,21 @@ object RecipeSearch {
         }
     }
 
-    fun searchRecipesByIngredients(
+    suspend fun searchRecipesByIngredients(
         ingredients: List<String>,
         number: Int = 50,
-        apiKey: String = "0c2296339d27412a8d9afdf7557ee6a7"
+        apiKey: String
     ): List<RecipeSummary>? {
-        val baseUrl = "https://api.spoonacular.com/recipes/findByIngredients"
+        rateLimitDelay()
+        val baseUrl = "https://$rapidApiHost/recipes/findByIngredients"
         val urlBuilder = baseUrl.toHttpUrlOrNull()?.newBuilder() ?: return null
         urlBuilder.addQueryParameter("ingredients", ingredients.joinToString(","))
         urlBuilder.addQueryParameter("number", number.toString())
-        urlBuilder.addQueryParameter("apiKey", apiKey)
-
         val request = Request.Builder()
             .url(urlBuilder.build())
+            .addHeader("x-rapidapi-key", this.apiKey)
+            .addHeader("x-rapidapi-host", rapidApiHost)
             .build()
-
         client.newCall(request).execute().use { response ->
             if (!response.isSuccessful) {
                 println("Error fetching recipe summaries: ${response.code}")
@@ -104,22 +101,15 @@ object RecipeSearch {
         }
     }
 
-    /**
-     * Fetches detailed recipe information for the given recipe ID.
-     *
-     * @param recipeId The ID of the recipe.
-     * @param apiKey Your Spoonacular API key.
-     * @return A RecipeDetails object or null if an error occurs.
-     */
-    fun getRecipeDetails(recipeId: Int, apiKey: String): RecipeDetails? {
-        val baseUrl = "https://api.spoonacular.com/recipes/$recipeId/information"
+    suspend fun getRecipeDetails(recipeId: Int): RecipeDetails? {
+        rateLimitDelay()
+        val baseUrl = "https://$rapidApiHost/recipes/$recipeId/information"
         val urlBuilder = baseUrl.toHttpUrlOrNull()?.newBuilder() ?: return null
-        urlBuilder.addQueryParameter("apiKey", apiKey)
-
         val request = Request.Builder()
             .url(urlBuilder.build())
+            .addHeader("x-rapidapi-key", apiKey)
+            .addHeader("x-rapidapi-host", rapidApiHost)
             .build()
-
         client.newCall(request).execute().use { response ->
             if (!response.isSuccessful) {
                 println("Error fetching recipe details: ${response.code}")
@@ -130,19 +120,76 @@ object RecipeSearch {
         }
     }
 
-    /**
-     * Retrieves a simplified display object containing the recipe title, image URL, and cook time.
-     *
-     * @param recipeId The ID of the recipe.
-     * @param apiKey Your Spoonacular API key.
-     * @return A RecipeDisplayInfo object or null if an error occurs.
-     */
-    fun getRecipeDisplayInfo(recipeId: Int, apiKey: String): RecipeDisplayInfo? {
-        val details = getRecipeDetails(recipeId, apiKey) ?: return null
+    suspend fun getRecipeDisplayInfo(recipeId: Int): RecipeDisplayInfo? {
+        val details = getRecipeDetails(recipeId) ?: return null
         return RecipeDisplayInfo(
             title = details.title,
             imageUrl = details.image,
-            cookTime = "${details.readyInMinutes} mins"
+            cookTime = "${details.readyInMinutes} mins",
+            recipeId = details.id
         )
     }
+
+    suspend fun searchRecipesByFilters(
+        ingredients: List<String>,
+        diet: String?,
+        minReadyTime: Int?,
+        maxReadyTime: Int?,
+        number: Int = 15
+    ): List<RecipeSummary>? {
+        rateLimitDelay()
+        val baseUrl = "https://$rapidApiHost/recipes/complexSearch"
+        val urlBuilder = baseUrl.toHttpUrlOrNull()?.newBuilder() ?: return null
+        urlBuilder.addQueryParameter("includeIngredients", ingredients.joinToString(","))
+        if (!diet.isNullOrEmpty()) {
+            urlBuilder.addQueryParameter("diet", diet)
+        }
+        if (minReadyTime != null) {
+            urlBuilder.addQueryParameter("minReadyTime", minReadyTime.toString())
+        }
+        if (maxReadyTime != null) {
+            urlBuilder.addQueryParameter("maxReadyTime", maxReadyTime.toString())
+        }
+        urlBuilder.addQueryParameter("number", number.toString())
+        val request = Request.Builder()
+            .url(urlBuilder.build())
+            .addHeader("x-rapidapi-key", apiKey)
+            .addHeader("x-rapidapi-host", rapidApiHost)
+            .build()
+        client.newCall(request).execute().use { response ->
+            if (!response.isSuccessful) {
+                println("Error fetching filtered recipes: ${response.code}")
+                return null
+            }
+            val responseBody = response.body?.string() ?: return null
+            val wrapper = gson.fromJson(responseBody, ComplexSearchResult::class.java)
+            return wrapper.results
+        }
+    }
+
+    suspend fun getIngredientSuggestions(query: String, number: Int = 20): List<String>? {
+        rateLimitDelay()
+        val baseUrl = "https://$rapidApiHost/food/ingredients/autocomplete"
+        val urlBuilder = baseUrl.toHttpUrlOrNull()?.newBuilder() ?: return null
+        urlBuilder.addQueryParameter("query", query)
+        urlBuilder.addQueryParameter("number", number.toString())
+        val request = Request.Builder()
+            .url(urlBuilder.build())
+            .addHeader("x-rapidapi-key", apiKey)
+            .addHeader("x-rapidapi-host", rapidApiHost)
+            .build()
+        client.newCall(request).execute().use { response ->
+            if (!response.isSuccessful) {
+                println("Error fetching ingredient suggestions: ${response.code}")
+                return null
+            }
+            val responseBody = response.body?.string() ?: return null
+            val suggestions = gson.fromJson(responseBody, Array<IngredientSuggestion>::class.java).toList()
+            return suggestions.map { it.name }
+        }
+    }
+
+    data class IngredientSuggestion(
+        val name: String
+    )
 }

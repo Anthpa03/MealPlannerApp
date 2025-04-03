@@ -37,6 +37,7 @@ class RecipeAdapter(
 
         holder.binding.buttonViewRecipe.setOnClickListener {
             val bundle = Bundle().apply {
+                putInt("recipeId", recipe.recipeId)
                 putString("title", recipe.title)
                 putString("cookTime", recipe.cookTime)
                 putString("imageUrl", recipe.imageUrl)

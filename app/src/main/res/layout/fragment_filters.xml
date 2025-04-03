@@ -1,29 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-    <CheckBox
-        android:id="@+id/milkCheckBox"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="15dp"
-        android:layout_marginEnd="85dp"
-        android:text="Milk"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/eggsCheckBox" />
-
-    <CheckBox
-        android:id="@+id/fishCheckBox"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="50dp"
-        android:layout_marginTop="15dp"
-        android:text="Fish"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/peanutsCheckBox" />
+    android:layout_height="wrap_content">
 
     <ImageButton
         android:id="@+id/imageButton_exit"
@@ -42,26 +22,26 @@
 
     <TextView
         android:id="@+id/textView_filter_title"
-        android:layout_width="110dp"
-        android:layout_height="48dp"
+        android:layout_width="183dp"
+        android:layout_height="84dp"
         android:layout_marginTop="48dp"
-        android:layout_marginEnd="192dp"
-        android:text="Filters"
-        android:textAlignment="viewEnd"
+        android:layout_marginEnd="100dp"
+        android:text="Search By Ingredients"
+
         android:textColor="#000000"
         android:textSize="34sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/textView_diet"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintVertical_bias="1.0" />
 
     <TextView
         android:id="@+id/textView_diet"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
-        android:text="Filter by Diet"
+        android:text="Select Diet"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.08"
@@ -73,7 +53,7 @@
         android:layout_width="362dp"
         android:layout_height="61dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintHorizontal_bias="0.551"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView_diet">
 
@@ -122,104 +102,53 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        android:text="Filter by Food Allergies"
+        android:text="Select Ingredients"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.09"
+        app:layout_constraintHorizontal_bias="0.094"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/chipGroup" />
-
-    <CheckBox
-        android:id="@+id/wheatCheckBox"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="50dp"
-        android:layout_marginTop="20dp"
-        android:text="Wheat"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView_allergies" />
-
-    <CheckBox
-        android:id="@+id/peanutsCheckBox"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="50dp"
-        android:layout_marginTop="15dp"
-        android:text="Peanuts"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/wheatCheckBox" />
-
-    <CheckBox
-        android:id="@+id/shellfishCheckBox"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:layout_marginEnd="58dp"
-        android:text="Shellfish"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/milkCheckBox" />
-
-    <CheckBox
-        android:id="@+id/eggsCheckBox"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="80dp"
-        android:text="Eggs"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView_allergies" />
-
-    <CheckBox
-        android:id="@+id/sesameCheckBox"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="50dp"
-        android:layout_marginTop="15dp"
-        android:text="Sesame"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/fishCheckBox" />
-
-    <CheckBox
-        android:id="@+id/treenutsCheckBox"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="15dp"
-        android:layout_marginEnd="50dp"
-        android:text="Tree Nuts"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/shellfishCheckBox" />
-
-    <EditText
-        android:id="@+id/otherEditText"
-        android:layout_width="wrap_content"
-        android:layout_height="48dp"
-        android:layout_marginTop="15dp"
-        android:ems="10"
-        android:hint="Other"
-        android:inputType="text"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/treenutsCheckBox" />
 
     <TextView
         android:id="@+id/ttcTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="58dp"
         android:text="Filter by Time to Cook"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.09"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/otherEditText" />
+        app:layout_constraintTop_toBottomOf="@+id/recyclerViewFilters" />
 
     <Spinner
         android:id="@+id/ttcSpinner"
         android:layout_width="wrap_content"
         android:layout_height="48dp"
-        android:layout_marginStart="45dp"
-        android:layout_marginTop="15dp"
+        android:layout_marginStart="28dp"
+        android:layout_marginTop="8dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/ttcTextView" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewFilters"
+        android:layout_width="409dp"
+        android:layout_height="267dp"
+        android:layout_marginTop="2dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView_allergies" />
+
+    <Button
+        android:id="@+id/buttonSearchByIngredients"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="84dp"
+        android:text="Search"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.687"
+        app:layout_constraintStart_toEndOf="@+id/ttcSpinner"
+        app:layout_constraintTop_toBottomOf="@+id/recyclerViewFilters" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

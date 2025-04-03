@@ -14,9 +14,9 @@ class CalendarFragment : BaseFragment<FragmentCalendarBinding>(FragmentCalendarB
     private lateinit var adapter: RecipeAdapter
     //private var savedRecipeList = mutableListOf<RecipeSearch.RecipeDisplayInfo>()
     private var savedRecipeList = mutableListOf(
-        RecipeSearch.RecipeDisplayInfo("Spaghetti Bolognese", "https://example.com/spaghetti.jpg", "12 mins"),
-        RecipeSearch.RecipeDisplayInfo("Chicken Curry", "https://example.com/chicken_curry.jpg", "18 mins"),
-        RecipeSearch.RecipeDisplayInfo("Vegetable Stir Fry", "https://example.com/veg_stir_fry.jpg", "8 mins")
+        RecipeSearch.RecipeDisplayInfo("Spaghetti Bolognese", "https://example.com/spaghetti.jpg", "12 mins",0),
+        RecipeSearch.RecipeDisplayInfo("Chicken Curry", "https://example.com/chicken_curry.jpg", "18 mins",0),
+        RecipeSearch.RecipeDisplayInfo("Vegetable Stir Fry", "https://example.com/veg_stir_fry.jpg", "8 mins",0)
     )
     private var mealDatePicker: DayScrollDatePicker? = null
     @RequiresApi(Build.VERSION_CODES.O)

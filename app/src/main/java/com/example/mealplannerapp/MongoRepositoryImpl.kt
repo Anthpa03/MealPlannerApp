@@ -83,6 +83,21 @@ class MongoRepositoryImpl(val realm: Realm):MongoRepository {
         }
     }
 
+    override suspend fun addSavedRecipe(userId: ObjectId, recipe: SavedRecipe) {
+        withContext(Dispatchers.Main) { // Ensure Realm write operations run on the main thread if needed.
+            realm.write {
+                // Query the user by ID to get a managed instance.
+                val user = query<User>("_id == $0", userId).first().find()
+                if (user == null) {
+                    Log.e("MongoRepositoryImpl", "User not found for id: $userId")
+                    return@write
+                }
+                // Add the new saved recipe to the user's list.
+                user.savedRecipes.add(recipe)
+                Log.d("MongoRepositoryImpl", "Added saved recipe: ${recipe.name} to user: ${user.Username}")
+            }
+        }
+    }
 
     override suspend fun addIngredient(userId: ObjectId, ingredientName: String, quantity: String, unit: String) {
         withContext(Dispatchers.Main) { // Must run on the main thread
