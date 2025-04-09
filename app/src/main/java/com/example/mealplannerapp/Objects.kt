@@ -19,22 +19,19 @@ class Ingredient : RealmObject {
 }
 // This RealmObject will store a saved recipe.
 class SavedRecipe : RealmObject {
-    @PrimaryKey
+
+            @PrimaryKey
     var recipeId: Int = 0  // Using the recipe ID as a primary key.
+
     var name: String = ""
     // Store the recipe’s ingredients using the existing Ingredient objects.
     var ingredients: RealmList<Ingredient> = realmListOf()
     var cookTime: String = ""
     var instructions: String = ""
     var image: String = ""
-    // Persist the date as epoch milliseconds.
-    var saveDateEpoch: Long = System.currentTimeMillis()
+    var bookmarked: Boolean = false
+    var saveDate: String = ""
 
-    // Provide a computed property for a Date object.
-    @Ignore
-    var saveDate: Date
-        get() = Date(saveDateEpoch)
-        set(value) { saveDateEpoch = value.time }
 }
 // Update the User class to include a list of ingredients.
 class User : RealmObject {
@@ -47,5 +44,6 @@ class User : RealmObject {
     // A RealmList to hold the ingredients for the user.
     var ingredients: RealmList<Ingredient> = realmListOf()
     var savedRecipes: RealmList<SavedRecipe> = realmListOf()
+    var recentlysavedRecipes: RealmList<SavedRecipe> = realmListOf()
 
 }

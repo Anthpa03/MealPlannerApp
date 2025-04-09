@@ -127,11 +127,11 @@
         android:id="@+id/recyclerViewIngredients"
         android:layout_width="0dp"
         android:layout_height="220dp"
-        android:layout_marginTop="15dp"
+        android:layout_marginTop="12dp"
         android:paddingLeft="35dp"
         android:paddingRight="35dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.51"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/buttonIngredients" />
 

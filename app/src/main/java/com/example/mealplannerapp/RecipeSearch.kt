@@ -2,17 +2,25 @@ package com.example.mealplannerapp
 
 import com.google.gson.Gson
 import kotlinx.coroutines.delay
+import okhttp3.Cache
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
-
+import java.io.File
+import okhttp3.Response
 object RecipeSearch {
-    private val client = OkHttpClient()
+    // Set up a cache; replace "cache" with context.cacheDir in production.
+    private val cacheSize = 10 * 1024 * 1024L // 10 MB
+    private val cacheDir = File("cache") // For production use a proper cache directory.
+    private val client = OkHttpClient.Builder()
+        .cache(Cache(cacheDir, cacheSize))
+        .build()
+
     private val gson = Gson()
-    // Use the API key injected via BuildConfig
     private val apiKey: String = BuildConfig.API_KEY
     private const val rapidApiHost = "spoonacular-recipe-food-nutrition-v1.p.rapidapi.com"
 
+    // Data classes
     data class RecipeSummary(
         val id: Int,
         val title: String,
@@ -49,13 +57,42 @@ object RecipeSearch {
         val totalResults: Int
     )
 
-    // Delay before each API call to help avoid rate limiting.
-    private suspend fun rateLimitDelay() {
-        delay(300)  // Delay 300 milliseconds. Adjust if needed.
+    data class IngredientSuggestion(
+        val name: String
+    )
+
+    // -------------------------
+    // Dynamic Backoff Helper
+    // -------------------------
+    /**
+     * Attempts to execute the request up to [maxAttempts] times.
+     * If a response with code 429 is encountered, it will delay with exponential backoff.
+     */
+    private suspend fun executeRequestWithBackoff(
+        request: Request,
+        maxAttempts: Int = 3,
+        initialDelay: Long = 50L
+    ): Response? {
+        var attempt = 0
+        var delayTime = initialDelay
+        while (attempt < maxAttempts) {
+            val response = client.newCall(request).execute()
+            if (response.isSuccessful || response.code != 429) {
+                return response
+            }
+            // Close the response and delay if it's a rate-limit error.
+            response.close()
+            delay(delayTime)
+            delayTime *= 2
+            attempt++
+        }
+        return null
     }
 
+    // -------------------------
+    // API Methods
+    // -------------------------
     suspend fun searchRecipesByQuery(query: String, number: Int = 15): List<RecipeSummary>? {
-        rateLimitDelay()
         val baseUrl = "https://$rapidApiHost/recipes/complexSearch"
         val urlBuilder = baseUrl.toHttpUrlOrNull()?.newBuilder() ?: return null
         urlBuilder.addQueryParameter("query", query)
@@ -65,12 +102,13 @@ object RecipeSearch {
             .addHeader("x-rapidapi-key", apiKey)
             .addHeader("x-rapidapi-host", rapidApiHost)
             .build()
-        client.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) {
-                println("Error fetching recipes: ${response.code}")
+        val response = executeRequestWithBackoff(request) ?: return null
+        response.use {
+            if (!it.isSuccessful) {
+                println("Error fetching recipes: ${it.code}")
                 return null
             }
-            val responseBody = response.body?.string() ?: return null
+            val responseBody = it.body?.string() ?: return null
             val wrapper = gson.fromJson(responseBody, ComplexSearchResult::class.java)
             return wrapper.results
         }
@@ -81,7 +119,6 @@ object RecipeSearch {
         number: Int = 50,
         apiKey: String
     ): List<RecipeSummary>? {
-        rateLimitDelay()
         val baseUrl = "https://$rapidApiHost/recipes/findByIngredients"
         val urlBuilder = baseUrl.toHttpUrlOrNull()?.newBuilder() ?: return null
         urlBuilder.addQueryParameter("ingredients", ingredients.joinToString(","))
@@ -91,18 +128,18 @@ object RecipeSearch {
             .addHeader("x-rapidapi-key", this.apiKey)
             .addHeader("x-rapidapi-host", rapidApiHost)
             .build()
-        client.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) {
-                println("Error fetching recipe summaries: ${response.code}")
+        val response = executeRequestWithBackoff(request) ?: return null
+        response.use {
+            if (!it.isSuccessful) {
+                println("Error fetching recipe summaries: ${it.code}")
                 return null
             }
-            val responseBody = response.body?.string() ?: return null
+            val responseBody = it.body?.string() ?: return null
             return gson.fromJson(responseBody, Array<RecipeSummary>::class.java).toList()
         }
     }
 
     suspend fun getRecipeDetails(recipeId: Int): RecipeDetails? {
-        rateLimitDelay()
         val baseUrl = "https://$rapidApiHost/recipes/$recipeId/information"
         val urlBuilder = baseUrl.toHttpUrlOrNull()?.newBuilder() ?: return null
         val request = Request.Builder()
@@ -110,12 +147,13 @@ object RecipeSearch {
             .addHeader("x-rapidapi-key", apiKey)
             .addHeader("x-rapidapi-host", rapidApiHost)
             .build()
-        client.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) {
-                println("Error fetching recipe details: ${response.code}")
+        val response = executeRequestWithBackoff(request) ?: return null
+        response.use {
+            if (!it.isSuccessful) {
+                println("Error fetching recipe details: ${it.code}")
                 return null
             }
-            val responseBody = response.body?.string() ?: return null
+            val responseBody = it.body?.string() ?: return null
             return gson.fromJson(responseBody, RecipeDetails::class.java)
         }
     }
@@ -137,7 +175,6 @@ object RecipeSearch {
         maxReadyTime: Int?,
         number: Int = 15
     ): List<RecipeSummary>? {
-        rateLimitDelay()
         val baseUrl = "https://$rapidApiHost/recipes/complexSearch"
         val urlBuilder = baseUrl.toHttpUrlOrNull()?.newBuilder() ?: return null
         urlBuilder.addQueryParameter("includeIngredients", ingredients.joinToString(","))
@@ -156,19 +193,19 @@ object RecipeSearch {
             .addHeader("x-rapidapi-key", apiKey)
             .addHeader("x-rapidapi-host", rapidApiHost)
             .build()
-        client.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) {
-                println("Error fetching filtered recipes: ${response.code}")
+        val response = executeRequestWithBackoff(request) ?: return null
+        response.use {
+            if (!it.isSuccessful) {
+                println("Error fetching filtered recipes: ${it.code}")
                 return null
             }
-            val responseBody = response.body?.string() ?: return null
+            val responseBody = it.body?.string() ?: return null
             val wrapper = gson.fromJson(responseBody, ComplexSearchResult::class.java)
             return wrapper.results
         }
     }
 
     suspend fun getIngredientSuggestions(query: String, number: Int = 20): List<String>? {
-        rateLimitDelay()
         val baseUrl = "https://$rapidApiHost/food/ingredients/autocomplete"
         val urlBuilder = baseUrl.toHttpUrlOrNull()?.newBuilder() ?: return null
         urlBuilder.addQueryParameter("query", query)
@@ -178,18 +215,15 @@ object RecipeSearch {
             .addHeader("x-rapidapi-key", apiKey)
             .addHeader("x-rapidapi-host", rapidApiHost)
             .build()
-        client.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) {
-                println("Error fetching ingredient suggestions: ${response.code}")
+        val response = executeRequestWithBackoff(request) ?: return null
+        response.use {
+            if (!it.isSuccessful) {
+                println("Error fetching ingredient suggestions: ${it.code}")
                 return null
             }
-            val responseBody = response.body?.string() ?: return null
+            val responseBody = it.body?.string() ?: return null
             val suggestions = gson.fromJson(responseBody, Array<IngredientSuggestion>::class.java).toList()
-            return suggestions.map { it.name }
+            return suggestions.map { suggestion -> suggestion.name }
         }
     }
-
-    data class IngredientSuggestion(
-        val name: String
-    )
 }

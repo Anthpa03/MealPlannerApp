@@ -6,6 +6,13 @@ plugins {
     id ("dagger.hilt.android.plugin")
     kotlin("kapt") version "1.8.21"
 }
+val localProperties = Properties().apply {
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        localPropertiesFile.inputStream().use { load(it) }
+    }
+}
+val API_KEY: String = localProperties.getProperty("API_KEY") ?: "default_api_key"
 
 android {
     namespace = "com.example.mealplannerapp"
@@ -25,7 +32,7 @@ android {
             properties.load(localPropertiesFile.inputStream())
         }
         val rapidApiKey = properties.getProperty("API_KEY") ?: ""
-        buildConfigField("String", "API_KEY", "\"$rapidApiKey\"")
+        buildConfigField("String", "API_KEY", "\"${rapidApiKey}\"")
     }
 
     buildTypes {
