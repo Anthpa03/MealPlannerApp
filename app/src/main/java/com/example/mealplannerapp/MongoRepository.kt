@@ -29,5 +29,6 @@ interface MongoRepository {
     // ======================
     suspend fun addSavedRecipe(userId: ObjectId, recipe: SavedRecipe)
     suspend fun updateSavedRecipe(userId: ObjectId, recipe: SavedRecipe)
+    suspend fun getSavedRecipesByDate(userId: ObjectId, dateString: String): List<SavedRecipe>
     suspend fun getRecentlySavedRecipes(userId: ObjectId): List<SavedRecipe>
 }

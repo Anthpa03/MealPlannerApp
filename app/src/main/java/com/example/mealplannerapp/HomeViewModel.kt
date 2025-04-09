@@ -192,7 +192,14 @@ class HomeViewModel @Inject constructor(private val repository: MongoRepository)
             Log.d("HomeViewModel", "Saved recipe '$name' for user: ${user.Username}")
         }
     }
-
+    suspend fun getSavedRecipesForDay(username: String, targetDateString: String): List<SavedRecipe> {
+        val user = repository.getUserByUsername(username)
+        return if (user != null) {
+            repository.getSavedRecipesByDate(user._id, targetDateString)
+        } else {
+            emptyList()
+        }
+    }
     suspend fun getRecentlySavedRecipesForUser(username: String): List<SavedRecipe> {
         val user = repository.getUserByUsername(username)
         return if (user != null) {

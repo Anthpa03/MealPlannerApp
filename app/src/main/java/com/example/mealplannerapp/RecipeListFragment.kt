@@ -128,7 +128,7 @@ class RecipeListFragment : BaseFragment<FragmentRecipeListBinding>(FragmentRecip
             val recipeSummaries = withContext(Dispatchers.IO) {
                 // Split the query string into individual ingredients.
                 val ingredients = ingredientsQuery.split(",").map { it.trim() }
-                RecipeSearch.searchRecipesByIngredients(ingredients, apiKey = API_KEY)
+                RecipeSearch.searchRecipesByIngredients(ingredients)
             }
 
             // Check if the view is still attached.

@@ -24,6 +24,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import dagger.hilt.android.AndroidEntryPoint
+import java.text.SimpleDateFormat
 import java.util.Locale
 
 @AndroidEntryPoint
@@ -173,10 +174,12 @@ class RecipeDetailFragment : BaseFragment<FragmentRecipeDetailsBinding>(Fragment
 
         var selectedDate: String? = null
 
-        // Retrieve the selected date from the DatePicker.
+// Retrieve the selected date from the DatePicker and format it.
         datePicker?.getSelectedDate { date ->
-            selectedDate = date.toString()
+            val sdf = SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.getDefault())
+            selectedDate = date?.let { sdf.format(it) }
         }
+
 
         buttonAddRecipe.setOnClickListener {
             if (selectedDate == null) {

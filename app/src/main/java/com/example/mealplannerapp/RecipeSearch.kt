@@ -10,15 +10,15 @@ import java.io.File
 import okhttp3.Response
 object RecipeSearch {
     // Set up a cache; replace "cache" with context.cacheDir in production.
-    private val cacheSize = 10 * 1024 * 1024L // 10 MB
+    private const val CACHESIZE = 10 * 1024 * 1024L // 10 MB
     private val cacheDir = File("cache") // For production use a proper cache directory.
     private val client = OkHttpClient.Builder()
-        .cache(Cache(cacheDir, cacheSize))
+        .cache(Cache(cacheDir, CACHESIZE))
         .build()
 
     private val gson = Gson()
     private val apiKey: String = BuildConfig.API_KEY
-    private const val rapidApiHost = "spoonacular-recipe-food-nutrition-v1.p.rapidapi.com"
+    private const val RAPIDAPIHOST = "spoonacular-recipe-food-nutrition-v1.p.rapidapi.com"
 
     // Data classes
     data class RecipeSummary(
@@ -93,14 +93,14 @@ object RecipeSearch {
     // API Methods
     // -------------------------
     suspend fun searchRecipesByQuery(query: String, number: Int = 15): List<RecipeSummary>? {
-        val baseUrl = "https://$rapidApiHost/recipes/complexSearch"
+        val baseUrl = "https://$RAPIDAPIHOST/recipes/complexSearch"
         val urlBuilder = baseUrl.toHttpUrlOrNull()?.newBuilder() ?: return null
         urlBuilder.addQueryParameter("query", query)
         urlBuilder.addQueryParameter("number", number.toString())
         val request = Request.Builder()
             .url(urlBuilder.build())
             .addHeader("x-rapidapi-key", apiKey)
-            .addHeader("x-rapidapi-host", rapidApiHost)
+            .addHeader("x-rapidapi-host", RAPIDAPIHOST)
             .build()
         val response = executeRequestWithBackoff(request) ?: return null
         response.use {
@@ -116,17 +116,16 @@ object RecipeSearch {
 
     suspend fun searchRecipesByIngredients(
         ingredients: List<String>,
-        number: Int = 50,
-        apiKey: String
+        number: Int = 50
     ): List<RecipeSummary>? {
-        val baseUrl = "https://$rapidApiHost/recipes/findByIngredients"
+        val baseUrl = "https://$RAPIDAPIHOST/recipes/findByIngredients"
         val urlBuilder = baseUrl.toHttpUrlOrNull()?.newBuilder() ?: return null
         urlBuilder.addQueryParameter("ingredients", ingredients.joinToString(","))
         urlBuilder.addQueryParameter("number", number.toString())
         val request = Request.Builder()
             .url(urlBuilder.build())
             .addHeader("x-rapidapi-key", this.apiKey)
-            .addHeader("x-rapidapi-host", rapidApiHost)
+            .addHeader("x-rapidapi-host", RAPIDAPIHOST)
             .build()
         val response = executeRequestWithBackoff(request) ?: return null
         response.use {
@@ -140,12 +139,12 @@ object RecipeSearch {
     }
 
     suspend fun getRecipeDetails(recipeId: Int): RecipeDetails? {
-        val baseUrl = "https://$rapidApiHost/recipes/$recipeId/information"
+        val baseUrl = "https://$RAPIDAPIHOST/recipes/$recipeId/information"
         val urlBuilder = baseUrl.toHttpUrlOrNull()?.newBuilder() ?: return null
         val request = Request.Builder()
             .url(urlBuilder.build())
             .addHeader("x-rapidapi-key", apiKey)
-            .addHeader("x-rapidapi-host", rapidApiHost)
+            .addHeader("x-rapidapi-host", RAPIDAPIHOST)
             .build()
         val response = executeRequestWithBackoff(request) ?: return null
         response.use {
@@ -175,7 +174,7 @@ object RecipeSearch {
         maxReadyTime: Int?,
         number: Int = 15
     ): List<RecipeSummary>? {
-        val baseUrl = "https://$rapidApiHost/recipes/complexSearch"
+        val baseUrl = "https://$RAPIDAPIHOST/recipes/complexSearch"
         val urlBuilder = baseUrl.toHttpUrlOrNull()?.newBuilder() ?: return null
         urlBuilder.addQueryParameter("includeIngredients", ingredients.joinToString(","))
         if (!diet.isNullOrEmpty()) {
@@ -191,7 +190,7 @@ object RecipeSearch {
         val request = Request.Builder()
             .url(urlBuilder.build())
             .addHeader("x-rapidapi-key", apiKey)
-            .addHeader("x-rapidapi-host", rapidApiHost)
+            .addHeader("x-rapidapi-host", RAPIDAPIHOST)
             .build()
         val response = executeRequestWithBackoff(request) ?: return null
         response.use {
@@ -206,14 +205,14 @@ object RecipeSearch {
     }
 
     suspend fun getIngredientSuggestions(query: String, number: Int = 20): List<String>? {
-        val baseUrl = "https://$rapidApiHost/food/ingredients/autocomplete"
+        val baseUrl = "https://$RAPIDAPIHOST/food/ingredients/autocomplete"
         val urlBuilder = baseUrl.toHttpUrlOrNull()?.newBuilder() ?: return null
         urlBuilder.addQueryParameter("query", query)
         urlBuilder.addQueryParameter("number", number.toString())
         val request = Request.Builder()
             .url(urlBuilder.build())
             .addHeader("x-rapidapi-key", apiKey)
-            .addHeader("x-rapidapi-host", rapidApiHost)
+            .addHeader("x-rapidapi-host", RAPIDAPIHOST)
             .build()
         val response = executeRequestWithBackoff(request) ?: return null
         response.use {

@@ -182,6 +182,15 @@ class MongoRepositoryImpl(val realm: Realm) : MongoRepository {
             }
         }
     }
+    override suspend fun getSavedRecipesByDate(userId: ObjectId, dateString: String): List<SavedRecipe> {
+        return withContext(Dispatchers.Main) {
+            // Query for the managed User.
+            val user = realm.query<User>("_id == $0", userId).first().find()
+            // If found, convert the realm list to a Kotlin List and filter by saveDateString.
+            user?.savedRecipes?.toList()?.filter { it.saveDate == dateString } ?: emptyList()
+        }
+    }
+
     override suspend fun getRecentlySavedRecipes(userId: ObjectId): List<SavedRecipe> {
         return withContext(Dispatchers.Main) {
             realm.query<User>("_id == $0", userId).first().find()?.recentlysavedRecipes?.toList() ?: emptyList()
