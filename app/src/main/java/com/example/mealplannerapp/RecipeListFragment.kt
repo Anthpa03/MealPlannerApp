@@ -16,6 +16,7 @@ class RecipeListFragment : BaseFragment<FragmentRecipeListBinding>(FragmentRecip
     private lateinit var adapter: RecipeAdapter  // Adapter now takes RecipeDisplayInfo items
     private var fullRecipeList = listOf<RecipeSearch.RecipeDisplayInfo>()
     private var filteredRecipeList = mutableListOf<RecipeSearch.RecipeDisplayInfo>()
+    private var currentSortOrder = "default" // This tracks current sort selection
     private val API_KEY: String = BuildConfig.API_KEY
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -65,6 +66,7 @@ class RecipeListFragment : BaseFragment<FragmentRecipeListBinding>(FragmentRecip
         binding.recyclerViewRecipes.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerViewRecipes.adapter = adapter
     }
+
 
     private fun setupSearchListener() {
         binding.editTextSearch.addTextChangedListener(object : TextWatcher {
@@ -175,17 +177,29 @@ class RecipeListFragment : BaseFragment<FragmentRecipeListBinding>(FragmentRecip
         binding.spinnerSort.visibility = View.VISIBLE
     }
 
+    //WIP
     private fun sortRecipes(order: String) {
-        when (order) {
+        val sortedList = when (order) {
             "ascending" -> {
-                // TODO: Implement ascending sort.
+                filteredRecipeList.sortedBy { it.title }
             }
             "descending" -> {
-                // TODO: Implement descending sort.
+                filteredRecipeList.sortedByDescending { it.title }
             }
             else -> {
-                // Default: e.g., prioritize bookmarks.
+                // Default: Sort by bookmarked first in descending order
+                filteredRecipeList.sortedByDescending { isBookmarked(it.title) }
             }
         }
+        filteredRecipeList.clear()
+        filteredRecipeList.addAll(sortedList)
+        adapter.notifyDataSetChanged()
     }
+
+    private fun isBookmarked(title: String): Boolean {
+        val sharedPreferences = requireContext().getSharedPreferences("Bookmarks", 0)
+        return sharedPreferences.getBoolean(title, false)
+    }
+
+
 }

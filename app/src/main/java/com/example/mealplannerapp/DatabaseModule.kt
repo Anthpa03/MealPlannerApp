@@ -22,6 +22,7 @@ object DatabaseModule{
             )
         )
             .compactOnLaunch()
+            .deleteRealmIfMigrationNeeded()
             .build()
         return Realm.open(config)
     }

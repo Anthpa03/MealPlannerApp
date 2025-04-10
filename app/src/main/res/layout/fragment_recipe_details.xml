@@ -55,6 +55,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="35dp"
         android:layout_marginTop="5dp"
+        android:maxWidth="300dp"
         android:text="Recipe Name"
         android:textSize="24sp"
         android:textStyle="bold"
