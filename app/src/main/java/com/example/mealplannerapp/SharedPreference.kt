@@ -13,43 +13,60 @@ object SharedPreferencesManager {
         return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     }
 
+    // --- User credentials ---
     fun saveUserCredentials(context: Context, username: String, password: String) {
         val sharedPreferences = getSharedPreferences(context)
-        val editor = sharedPreferences.edit()
-        editor.putString(KEY_USERNAME, username)
-        editor.putString(KEY_PASSWORD, password)
-        editor.apply()
+        sharedPreferences.edit()
+            .putString(KEY_USERNAME, username)
+            .putString(KEY_PASSWORD, password)
+            .apply()
     }
 
     fun saveUsername(context: Context, username: String) {
-        val sharedPreferences = getSharedPreferences(context)
-        val editor = sharedPreferences.edit()
-        editor.putString(KEY_USERNAME, username)
-        editor.apply()
+        getSharedPreferences(context).edit()
+            .putString(KEY_USERNAME, username)
+            .apply()
     }
 
     fun savePassword(context: Context, password: String) {
-        val sharedPreferences = getSharedPreferences(context)
-        val editor = sharedPreferences.edit()
-        editor.putString(KEY_PASSWORD, password)
-        editor.apply()
+        getSharedPreferences(context).edit()
+            .putString(KEY_PASSWORD, password)
+            .apply()
     }
 
-    fun getUsername(context: Context): String? {
-        val sharedPreferences = getSharedPreferences(context)
-        return sharedPreferences.getString(KEY_USERNAME, null)
-    }
+    fun getUsername(context: Context): String? =
+        getSharedPreferences(context).getString(KEY_USERNAME, null)
 
-    fun getPassword(context: Context): String? {
-        val sharedPreferences = getSharedPreferences(context)
-        return sharedPreferences.getString(KEY_PASSWORD, null)
-    }
+    fun getPassword(context: Context): String? =
+        getSharedPreferences(context).getString(KEY_PASSWORD, null)
 
     fun clearUserCredentials(context: Context) {
-        val sharedPreferences = getSharedPreferences(context)
-        val editor = sharedPreferences.edit()
-        editor.remove(KEY_USERNAME)
-        editor.remove(KEY_PASSWORD)
-        editor.apply()
+        getSharedPreferences(context).edit()
+            .remove(KEY_USERNAME)
+            .remove(KEY_PASSWORD)
+            .apply()
+    }
+
+    // --- Bookmarks ---
+    fun addBookmark(context: Context, username: String, itemName: String) {
+        val prefs = getSharedPreferences(context)
+        val userKey = "bookmarks_$username"
+        val bookmarks = prefs.getStringSet(userKey, mutableSetOf()) ?: mutableSetOf()
+        bookmarks.add(itemName)
+        prefs.edit().putStringSet(userKey, bookmarks).apply()
+    }
+
+    fun removeBookmark(context: Context, username: String, itemName: String) {
+        val prefs = getSharedPreferences(context)
+        val userKey = "bookmarks_$username"
+        val bookmarks = prefs.getStringSet(userKey, mutableSetOf())?.toMutableSet() ?: mutableSetOf()
+        bookmarks.remove(itemName)
+        prefs.edit().putStringSet(userKey, bookmarks).apply()
+    }
+
+    fun isBookmarked(context: Context, username: String, itemName: String): Boolean {
+        val prefs = getSharedPreferences(context)
+        val userKey = "bookmarks_$username"
+        return prefs.getStringSet(userKey, mutableSetOf())?.contains(itemName) == true
     }
 }

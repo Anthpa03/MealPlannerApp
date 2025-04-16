@@ -5,6 +5,8 @@ import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
+import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.example.mealplannerapp.databinding.ActivityHomeBinding
@@ -33,6 +35,32 @@ class HomeActivity : AppCompatActivity(){
             }
             true
         }
+
+        onBackPressedDispatcher.addCallback(this@HomeActivity, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                val fragmentManager = supportFragmentManager
+
+                // If there's only one fragment (HomeFragment) on the stack,
+                // then present user with exit confirmation dialog
+                if (fragmentManager.backStackEntryCount == 1) {
+                    AlertDialog.Builder(this@HomeActivity)
+                        .setTitle("Exit App")
+                        .setMessage("Are you sure you want to exit?")
+                        .setPositiveButton("Yes") { dialog, _ ->
+                            dialog.dismiss()
+                            finishAffinity()
+                        }
+                        .setNegativeButton("No") { dialog, _ ->
+                            dialog.dismiss()
+                        }
+                        .show()
+                } else {
+                    fragmentManager.popBackStack()
+                }
+            }
+        })
+
+
     }
 
     private fun replaceFragment(fragment: Fragment) {

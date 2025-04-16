@@ -13,10 +13,9 @@ import kotlinx.coroutines.withContext
 
 class RecipeListFragment : BaseFragment<FragmentRecipeListBinding>(FragmentRecipeListBinding::inflate) {
 
-    private lateinit var adapter: RecipeAdapter  // Adapter now takes RecipeDisplayInfo items
+    private lateinit var adapter: RecipeAdapter
     private var fullRecipeList = listOf<RecipeSearch.RecipeDisplayInfo>()
     private var filteredRecipeList = mutableListOf<RecipeSearch.RecipeDisplayInfo>()
-    private var currentSortOrder = "default" // This tracks current sort selection
     private val API_KEY: String = BuildConfig.API_KEY
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -29,7 +28,7 @@ class RecipeListFragment : BaseFragment<FragmentRecipeListBinding>(FragmentRecip
         // Set the search query in the search EditText.
         binding.editTextSearch.setText(searchQuery)
 
-        // Initially, hide results and show the progress bar.
+        // Initially, hide results and only show the progress bar.
         binding.progressBar.visibility = View.VISIBLE
         binding.recyclerViewRecipes.visibility = View.GONE
         binding.textViewResults.visibility = View.GONE
@@ -38,7 +37,6 @@ class RecipeListFragment : BaseFragment<FragmentRecipeListBinding>(FragmentRecip
         setupSearchListener()
         if (searchQuery.isNotEmpty()) {
             if (!cookTimeFilter.isNullOrEmpty() || !dietFilter.isNullOrEmpty()) {
-                // Call your filtered search function. You'll need to parse the cookTimeFilter into min and max values.
                 fetchFilteredRecipes(searchQuery, dietFilter, cookTimeFilter)
             } else {
                 fetchRecipes(searchQuery)
@@ -88,6 +86,9 @@ class RecipeListFragment : BaseFragment<FragmentRecipeListBinding>(FragmentRecip
                     recipe.title.contains(query, ignoreCase = true)
                 }
             )
+        }
+        if (filteredRecipeList.isNotEmpty()) {
+            sortRecipes("default")
         }
         adapter.notifyDataSetChanged()
         binding.textViewResults.text = "Showing ${filteredRecipeList.size} results"
@@ -177,28 +178,23 @@ class RecipeListFragment : BaseFragment<FragmentRecipeListBinding>(FragmentRecip
         binding.spinnerSort.visibility = View.VISIBLE
     }
 
-    //WIP
     private fun sortRecipes(order: String) {
+        val username = SharedPreferencesManager.getUsername(requireContext()) ?: return
         val sortedList = when (order) {
-            "ascending" -> {
-                filteredRecipeList.sortedBy { it.title }
-            }
-            "descending" -> {
-                filteredRecipeList.sortedByDescending { it.title }
-            }
+            "ascending" -> filteredRecipeList.sortedBy { it.title }
+            "descending" -> filteredRecipeList.sortedByDescending { it.title }
             else -> {
-                // Default: Sort by bookmarked first in descending order
-                filteredRecipeList.sortedByDescending { isBookmarked(it.title) }
+                // Default: prioritize bookmarks
+                filteredRecipeList.sortedWith(
+                    compareByDescending<RecipeSearch.RecipeDisplayInfo> {
+                        SharedPreferencesManager.isBookmarked(requireContext(), username, it.title)
+                    }.thenBy { it.title }
+                )
             }
         }
         filteredRecipeList.clear()
         filteredRecipeList.addAll(sortedList)
         adapter.notifyDataSetChanged()
-    }
-
-    private fun isBookmarked(title: String): Boolean {
-        val sharedPreferences = requireContext().getSharedPreferences("Bookmarks", 0)
-        return sharedPreferences.getBoolean(title, false)
     }
 
 

@@ -15,9 +15,15 @@ import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.example.mealplannerapp.databinding.FragmentEditProfileBinding
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class EditProfileFragment : BaseFragment<FragmentEditProfileBinding>(FragmentEditProfileBinding::inflate) {
+    private val homeViewModel: HomeViewModel by viewModels()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -35,7 +41,7 @@ class EditProfileFragment : BaseFragment<FragmentEditProfileBinding>(FragmentEdi
         }
     }
 
-    //TODO:implement database connections to reflect username/password modifications
+    //TODO:implement database connections to reflect username/password modifications & account deletion
     private fun showBottomDialogChangeUsername() {
         val dialog = Dialog(requireContext())
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -46,15 +52,26 @@ class EditProfileFragment : BaseFragment<FragmentEditProfileBinding>(FragmentEdi
 
         buttonConfirm.setOnClickListener {
             val newUsername = dialog.findViewById<EditText>(R.id.newUsernameEditText).text.toString().trim()
+            val currentUsername = SharedPreferencesManager.getUsername(requireContext()) ?: ""
+
             if (newUsername.isEmpty()) {
                 Toast.makeText(requireContext(), "Username cannot be empty", Toast.LENGTH_SHORT).show()
+            } else if (newUsername == currentUsername) {
+                Toast.makeText(requireContext(), "That's already your current username", Toast.LENGTH_SHORT).show()
             } else {
-                SharedPreferencesManager.saveUsername(requireContext(), newUsername)
-                Toast.makeText(requireContext(), "Username successfully changed", Toast.LENGTH_SHORT).show()
-                dialog.dismiss()
+                lifecycleScope.launch {
+                    val existingUser = homeViewModel.getUserByUsername(newUsername)
+                    if (existingUser != null) {
+                        Toast.makeText(requireContext(), "That username already exists", Toast.LENGTH_SHORT).show()
+                    } else {
+                        SharedPreferencesManager.saveUsername(requireContext(), newUsername)
+                        Toast.makeText(requireContext(), "Username successfully changed", Toast.LENGTH_SHORT).show()
+                        dialog.dismiss()
+                    }
+                }
             }
         }
-
+        
         cancelButton.setOnClickListener {
             dialog.dismiss()
         }
@@ -109,8 +126,6 @@ class EditProfileFragment : BaseFragment<FragmentEditProfileBinding>(FragmentEdi
         builder.setMessage("Are you sure you want to delete your account? All your data will be removed.")
         builder.setPositiveButton("Delete") { _, _ ->
             SharedPreferencesManager.clearUserCredentials(requireContext())
-            //TODO: Implement logic to delete account
-
             val intent = Intent(requireContext(), MainActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)

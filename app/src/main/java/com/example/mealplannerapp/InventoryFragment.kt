@@ -99,18 +99,32 @@ class InventoryFragment : BaseFragment<FragmentInventoryBinding>(FragmentInvento
     }
 
     private fun sortIngredients(order: String) {
-        when (order) {
-            "ascending" -> {
-            }
-
-            "descending" -> {
-            }
-
-            else -> {
-                // Default for this one should also be prioritizing bookmarks
-            }
+        lifecycleScope.launch {
+            sortIngredientsInternal(order)
         }
     }
+    private suspend fun sortIngredientsInternal(order: String) {
+        val username = SharedPreferencesManager.getUsername(requireContext()) ?: return
+        val sortedList = when (order) {
+            "ascending" -> inventoryList.sortedBy { it.name }
+            "descending" -> inventoryList.sortedByDescending { it.name }
+            else -> {
+                // Default: Prioritize bookmarks
+                inventoryList.sortedWith(
+                    compareByDescending<InventoryItem> {
+                        SharedPreferencesManager.isBookmarked(requireContext(), username, it.name)
+                    }.thenBy { it.name }
+                )
+            }
+        }
+
+        withContext(Dispatchers.Main) {
+            inventoryList.clear()
+            inventoryList.addAll(sortedList)
+            adapter.notifyDataSetChanged()
+        }
+    }
+
 
     private fun setupRecyclerView() {
         adapter = InventoryAdapter(inventoryList) { ingredient ->
@@ -283,6 +297,10 @@ class InventoryFragment : BaseFragment<FragmentInventoryBinding>(FragmentInvento
                         ingredient.unit
                     )
                 )
+            }
+
+            if(inventoryList.isNotEmpty()){
+                sortIngredientsInternal("default")
             }
 
             // Notify the adapter on the main thread.

@@ -1,7 +1,8 @@
+
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.example.mealplannerapp.R
+import com.example.mealplannerapp.SharedPreferencesManager
 import com.example.mealplannerapp.databinding.InventoryRecyclerViewCardBinding
 
 class InventoryAdapter(
@@ -22,14 +23,25 @@ class InventoryAdapter(
         holder.binding.amountTextView.text = item.quantity
         holder.binding.unitTextView.text = item.unit
 
+        val context = holder.itemView.context
+        val username = SharedPreferencesManager.getUsername(context) ?: ""
+
+        // Handles bookmark toggle
+        val isBookmarked = SharedPreferencesManager.isBookmarked(context, username, item.name)
+        holder.binding.imageButtonBookmark.isSelected = isBookmarked
+        holder.binding.imageButtonBookmark.setOnClickListener { button ->
+            if (isBookmarked) {
+                SharedPreferencesManager.removeBookmark(context, username, item.name)
+                button.isSelected = false
+            } else {
+                SharedPreferencesManager.addBookmark(context, username, item.name)
+                button.isSelected = true
+            }
+        }
+
         // When the edit button is clicked, trigger the onEditClick lambda.
         holder.binding.buttonEdit.setOnClickListener {
             onEditClick(item)
-        }
-
-        // Bookmark logic remains unchanged.
-        holder.binding.imageButtonBookmark.setOnClickListener { button ->
-            button.isSelected = !button.isSelected  // Toggle bookmark selection
         }
     }
 

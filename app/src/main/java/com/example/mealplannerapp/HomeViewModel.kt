@@ -208,4 +208,10 @@ class HomeViewModel @Inject constructor(private val repository: MongoRepository)
             emptyList()
         }
     }
+
+    // New method for username change logic
+    suspend fun getUserByUsername(username: String): User? {
+        return repository.getUserByUsername(username)
+    }
+
 }

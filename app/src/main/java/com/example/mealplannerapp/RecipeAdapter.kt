@@ -21,13 +21,24 @@ class RecipeAdapter(
 
     override fun onBindViewHolder(holder: RecipeViewHolder, position: Int) {
         val recipe = recipes[position]
+        val context = holder.itemView.context
+        val username = SharedPreferencesManager.getUsername(context) ?: ""
 
         // Use the new property names from RecipeDisplayInfo
         holder.binding.textViewRecipeName.text = recipe.title
         holder.binding.textViewTtc.text = recipe.cookTime
 
+        // Handles bookmark toggle
+        val isBookmarked = SharedPreferencesManager.isBookmarked(context, username, recipe.title)
+        holder.binding.imageButtonBookmark.isSelected = isBookmarked
         holder.binding.imageButtonBookmark.setOnClickListener { button ->
-            button.isSelected = !button.isSelected  // Toggle bookmark selection
+            if (isBookmarked) {
+                SharedPreferencesManager.removeBookmark(context, username, recipe.title)
+                button.isSelected = false
+            } else {
+                SharedPreferencesManager.addBookmark(context, username, recipe.title)
+                button.isSelected = true
+            }
         }
 
         Glide.with(holder.itemView.context)
