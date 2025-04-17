@@ -13,6 +13,8 @@ interface MongoRepository {
     fun filterData(name: String): Flow<List<User>>
     suspend fun insertUser(user: User)
     suspend fun updateUser(user: User)
+    suspend fun updateUsername(userId: ObjectId, newUsername: String)
+    suspend fun updatePassword(userId: ObjectId, newPassword: String)
     suspend fun deleteUser(id: ObjectId)
     suspend fun authenticateUser(username: String, password: String): User?
     suspend fun getUserByUsername(username: String): User?

@@ -221,7 +221,7 @@ class RecipeDetailFragment : BaseFragment<FragmentRecipeDetailsBinding>(Fragment
             cookTime = recipe.cookTime,
             instructions = "",         // You can pass instructions if available
             image = recipe.imageUrl,
-            date = selectedDate
+            dateString = selectedDate
         )
         Toast.makeText(requireContext(), "Recipe saved!", Toast.LENGTH_SHORT).show()
     }

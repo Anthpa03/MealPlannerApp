@@ -1,5 +1,6 @@
 package com.example.mealplannerapp
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -16,46 +17,45 @@ class RecipeListFragment : BaseFragment<FragmentRecipeListBinding>(FragmentRecip
     private lateinit var adapter: RecipeAdapter
     private var fullRecipeList = listOf<RecipeSearch.RecipeDisplayInfo>()
     private var filteredRecipeList = mutableListOf<RecipeSearch.RecipeDisplayInfo>()
-    private val API_KEY: String = BuildConfig.API_KEY
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupRecyclerView()
-        val searchQuery = arguments?.getString("search_query") ?: ""
-        val cookTimeFilter = arguments?.getString("cook_time_filter")
-        val dietFilter = arguments?.getString("diet_filter")
 
-        // Set the search query in the search EditText.
+        val searchQuery     = arguments?.getString("search_query") ?: ""
+        val cookTimeFilter  = arguments?.getString("cook_time_filter")
+        val dietFilter      = arguments?.getString("diet_filter")
+
         binding.editTextSearch.setText(searchQuery)
 
-        // Initially, hide results and only show the progress bar.
-        binding.progressBar.visibility = View.VISIBLE
+        // Show only spinner while we load
+        binding.progressBar.visibility        = View.VISIBLE
         binding.recyclerViewRecipes.visibility = View.GONE
-        binding.textViewResults.visibility = View.GONE
-        binding.spinnerSort.visibility = View.GONE
+        binding.textViewResults.visibility     = View.GONE
+        binding.spinnerSort.visibility         = View.GONE
 
         setupSearchListener()
-        if (searchQuery.isNotEmpty()) {
-            if (!cookTimeFilter.isNullOrEmpty() || !dietFilter.isNullOrEmpty()) {
-                fetchFilteredRecipes(searchQuery, dietFilter, cookTimeFilter)
-            } else {
-                fetchRecipes(searchQuery)
-            }
-        } else {
-            loadDefaultRecipes()
-        }
-        // Set up filter button and spinner.
-        binding.imageButtonFilter.setOnClickListener {
-            (activity as? HomeActivity)?.navigateToFragment(FilterListFragment())
+
+        when {
+            searchQuery.isEmpty() -> loadDefaultRecipes()
+            !cookTimeFilter.isNullOrEmpty() || !dietFilter.isNullOrEmpty() ->
+                fetchFilteredRecipesWithInfo(searchQuery, dietFilter, cookTimeFilter)
+            else -> fetchRecipesWithInfo(searchQuery)
         }
 
-        (activity as? HomeActivity)?.setupSpinner(binding.spinnerSort) { position ->
-            when (position) {
-                0 -> sortRecipes("default")
-                1 -> sortRecipes("ascending")
-                2 -> sortRecipes("descending")
-            }
+        binding.imageButtonFilter.setOnClickListener {
+            (activity as? HomeActivity)
+                ?.navigateToFragment(FilterListFragment())
         }
+
+        (activity as? HomeActivity)
+            ?.setupSpinner(binding.spinnerSort) { position ->
+                when (position) {
+                    0 -> sortRecipes("default")
+                    1 -> sortRecipes("ascending")
+                    2 -> sortRecipes("descending")
+                }
+            }
     }
 
     private fun setupRecyclerView() {
@@ -65,137 +65,144 @@ class RecipeListFragment : BaseFragment<FragmentRecipeListBinding>(FragmentRecip
         binding.recyclerViewRecipes.adapter = adapter
     }
 
-
     private fun setupSearchListener() {
         binding.editTextSearch.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) { }
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 filterRecipes(s.toString())
             }
-            override fun afterTextChanged(s: Editable?) { }
+            override fun afterTextChanged(s: Editable?) {}
         })
     }
 
+    @SuppressLint("NotifyDataSetChanged", "SetTextI18n")
     private fun filterRecipes(query: String) {
-        filteredRecipeList.clear()
-        if (query.isEmpty()) {
-            filteredRecipeList.addAll(fullRecipeList)
-        } else {
-            filteredRecipeList.addAll(
-                fullRecipeList.filter { recipe ->
-                    recipe.title.contains(query, ignoreCase = true)
-                }
-            )
+        filteredRecipeList.apply {
+            clear()
+            if (query.isEmpty()) addAll(fullRecipeList)
+            else addAll(fullRecipeList.filter { it.title.contains(query, ignoreCase = true) })
         }
-        if (filteredRecipeList.isNotEmpty()) {
-            sortRecipes("default")
-        }
+        sortRecipes("default")
         adapter.notifyDataSetChanged()
         binding.textViewResults.text = "Showing ${filteredRecipeList.size} results"
     }
-    private fun fetchFilteredRecipes(ingredientsQuery: String, dietFilter: String?, cookTimeFilter: String?) {
-        // Parse cookTimeFilter into min and max values. Example:
-        var minReadyTime: Int? = null
-        var maxReadyTime: Int? = null
-        cookTimeFilter?.let { range ->
-            when {
-                range.contains("0-15") -> { minReadyTime = 0; maxReadyTime = 15 }
-                range.contains("16-30") -> { minReadyTime = 16; maxReadyTime = 30 }
-                range.contains("31-60") -> { minReadyTime = 31; maxReadyTime = 60 }
-                range.contains(">60") -> { minReadyTime = 61; maxReadyTime = null }
+
+    private fun fetchRecipesWithInfo(query: String) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            // 1️⃣ Show loading
+            binding.progressBar.visibility        = View.VISIBLE
+            binding.recyclerViewRecipes.visibility = View.GONE
+            binding.textViewResults.visibility     = View.GONE
+            binding.spinnerSort.visibility         = View.GONE
+
+            // 2️⃣ Perform network call on IO
+            val results = withContext(Dispatchers.IO) {
+                RecipeSearch.searchDisplayInfoByQuery(query)
+            }.orEmpty()
+
+            // 3️⃣ Update lists & adapter
+            fullRecipeList = results
+            filteredRecipeList.apply {
+                clear()
+                addAll(results)
             }
+            adapter.notifyDataSetChanged()
+
+            // 4️⃣ Reveal UI
+            binding.progressBar.visibility        = View.GONE
+            binding.recyclerViewRecipes.visibility = View.VISIBLE
+            binding.textViewResults.visibility     = View.VISIBLE
+            binding.spinnerSort.visibility         = View.VISIBLE
+            binding.textViewResults.text           = "Showing ${results.size} results"
+        }
+    }
+
+    private fun fetchFilteredRecipesWithInfo(
+        ingredientsQuery: String,
+        dietFilter: String?,
+        cookTimeFilter: String?
+    ) {
+        // parse your time filters
+        val (minTime, maxTime) = when {
+            cookTimeFilter?.contains("0-15") == true  -> 0 to 15
+            cookTimeFilter?.contains("16-30") == true -> 16 to 30
+            cookTimeFilter?.contains("31-60") == true -> 31 to 60
+            cookTimeFilter?.contains(">60") == true   -> 61 to Int.MAX_VALUE
+            else                                       -> null to null
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
-            val recipeSummaries = withContext(Dispatchers.IO) {
-                RecipeSearch.searchRecipesByFilters(
-                    ingredients = ingredientsQuery.split(",").map { it.trim() },
-                    diet = dietFilter,
-                    minReadyTime = minReadyTime,
-                    maxReadyTime = maxReadyTime,
-                    number = 15
+            // 1️⃣ show loading
+            binding.progressBar.visibility        = View.VISIBLE
+            binding.recyclerViewRecipes.visibility = View.GONE
+            binding.textViewResults.visibility     = View.GONE
+            binding.spinnerSort.visibility         = View.GONE
+
+            // 2️⃣ run on IO
+            val details = withContext(Dispatchers.IO) {
+                RecipeSearch.searchRecipesWithInfoAndFilters(
+                    query         = ingredientsQuery,
+                    diet          = dietFilter,
+                    minReadyTime  = minTime,
+                    maxReadyTime  = maxTime
+                )
+            }.orEmpty()
+
+            // 3️⃣ map into your display model
+            val display = details.map {
+                RecipeSearch.RecipeDisplayInfo(
+                    title    = it.title,
+                    imageUrl = it.image,
+                    cookTime = "${it.readyInMinutes} mins",
+                    recipeId = it.id
                 )
             }
-            fullRecipeList = (recipeSummaries ?: emptyList()) as List<RecipeSearch.RecipeDisplayInfo>
-            filterRecipes(binding.editTextSearch.text.toString())
-            binding.progressBar.visibility = View.GONE
-            binding.recyclerViewRecipes.visibility = View.VISIBLE
-            binding.textViewResults.visibility = View.VISIBLE
-            binding.spinnerSort.visibility = View.VISIBLE
-        }
-    }
 
-    // Fetch recipes by ingredients (comma-separated) using your Spoonacular API methods.
-    private fun fetchRecipes(ingredientsQuery: String) {
-        viewLifecycleOwner.lifecycleScope.launch {
-            val recipeSummaries = withContext(Dispatchers.IO) {
-                // Split the query string into individual ingredients.
-                val ingredients = ingredientsQuery.split(",").map { it.trim() }
-                RecipeSearch.searchRecipesByIngredients(ingredients)
+            // 4️⃣ update adapter
+            fullRecipeList = display
+            filteredRecipeList.apply {
+                clear()
+                addAll(display)
             }
+            adapter.notifyDataSetChanged()
 
-            // Check if the view is still attached.
-            if (!isAdded || view == null) return@launch
-
-            // For each summary, fetch detailed info.
-            val recipeDisplayList = recipeSummaries?.mapNotNull { summary ->
-                withContext(Dispatchers.IO) {
-                    RecipeSearch.getRecipeDisplayInfo(summary.id)
-                }
-            } ?: emptyList()
-
-            fullRecipeList = recipeDisplayList
-            filterRecipes(binding.editTextSearch.text.toString())
-
-            // Once results are loaded, hide the progress bar and show the results views.
-            binding.progressBar.visibility = View.GONE
+            // 5️⃣ reveal UI
+            binding.progressBar.visibility        = View.GONE
             binding.recyclerViewRecipes.visibility = View.VISIBLE
-            binding.textViewResults.visibility = View.VISIBLE
-            binding.spinnerSort.visibility = View.VISIBLE
+            binding.textViewResults.visibility     = View.VISIBLE
+            binding.spinnerSort.visibility         = View.VISIBLE
+            binding.textViewResults.text           = "Showing ${display.size} results"
         }
     }
 
-    // Loads a default list of recipes in case no search query is provided.
     private fun loadDefaultRecipes() {
         fullRecipeList = listOf(
-            RecipeSearch.RecipeDisplayInfo(
-                "Cheese Pizza",
-                "https://example.com/pizza.jpg",
-                "15 mins", 0
-            ),
-            RecipeSearch.RecipeDisplayInfo(
-                "Pepperoni Pizza",
-                "https://example.com/pizza.jpg",
-                "20 mins", 0
-            )
+            RecipeSearch.RecipeDisplayInfo("Cheese Pizza",    "https://example.com/pizza.jpg", "15 mins", 0),
+            RecipeSearch.RecipeDisplayInfo("Pepperoni Pizza", "https://example.com/pizza.jpg", "20 mins", 0)
         )
         filterRecipes(binding.editTextSearch.text.toString())
 
-        // Hide the progress bar and show the results.
-        binding.progressBar.visibility = View.GONE
+        binding.progressBar.visibility        = View.GONE
         binding.recyclerViewRecipes.visibility = View.VISIBLE
-        binding.textViewResults.visibility = View.VISIBLE
-        binding.spinnerSort.visibility = View.VISIBLE
+        binding.textViewResults.visibility     = View.VISIBLE
+        binding.spinnerSort.visibility         = View.VISIBLE
     }
 
     private fun sortRecipes(order: String) {
         val username = SharedPreferencesManager.getUsername(requireContext()) ?: return
-        val sortedList = when (order) {
-            "ascending" -> filteredRecipeList.sortedBy { it.title }
+        val sorted = when (order) {
+            "ascending"  -> filteredRecipeList.sortedBy { it.title }
             "descending" -> filteredRecipeList.sortedByDescending { it.title }
-            else -> {
-                // Default: prioritize bookmarks
-                filteredRecipeList.sortedWith(
-                    compareByDescending<RecipeSearch.RecipeDisplayInfo> {
-                        SharedPreferencesManager.isBookmarked(requireContext(), username, it.title)
-                    }.thenBy { it.title }
-                )
-            }
+            else         -> filteredRecipeList.sortedWith(
+                compareByDescending<RecipeSearch.RecipeDisplayInfo> {
+                    SharedPreferencesManager.isBookmarked(requireContext(), username, it.title)
+                }.thenBy { it.title }
+            )
         }
-        filteredRecipeList.clear()
-        filteredRecipeList.addAll(sortedList)
+        filteredRecipeList.apply {
+            clear()
+            addAll(sorted)
+        }
         adapter.notifyDataSetChanged()
     }
-
-
 }

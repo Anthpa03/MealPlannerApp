@@ -20,8 +20,11 @@ class Ingredient : RealmObject {
 // This RealmObject will store a saved recipe.
 class SavedRecipe : RealmObject {
 
-            @PrimaryKey
-    var recipeId: Int = 0  // Using the recipe ID as a primary key.
+    @PrimaryKey
+    var _id: ObjectId = ObjectId.invoke()
+
+
+    var recipeId: Int = 0
 
     var name: String = ""
     // Store the recipe’s ingredients using the existing Ingredient objects.

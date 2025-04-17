@@ -46,7 +46,33 @@ class MongoRepositoryImpl(val realm: Realm) : MongoRepository {
             }
         }
     }
-
+    override suspend fun updateUsername(userId: ObjectId, newUsername: String) {
+        withContext(Dispatchers.Main) {
+            realm.write {
+                val user = query<User>("_id == $0", userId).first().find()
+                if (user != null) {
+                    user.Username = newUsername
+                    Log.d("MongoRepo", "Username updated to '$newUsername'")
+                } else {
+                    Log.e("MongoRepo", "User not found for id $userId")
+                }
+            }
+        }
+    }
+    override suspend fun updatePassword(userId: ObjectId, newPassword: String) {
+        val hashed = hashPassword(newPassword)
+        withContext(Dispatchers.Main) {
+            realm.write {
+                val user = query<User>("_id == $0", userId).first().find()
+                if (user != null) {
+                    user.Password = hashed
+                    Log.d("MongoRepo", "Password updated for user ${user.Username}")
+                } else {
+                    Log.e("MongoRepo", "User not found for id $userId")
+                }
+            }
+        }
+    }
     override suspend fun deleteUser(id: ObjectId) {
         realm.write {
             val user = query<User>(query = "_id==$0", id).first().find()
@@ -136,18 +162,19 @@ class MongoRepositoryImpl(val realm: Realm) : MongoRepository {
     }
 
     // ========================
-    // Recipe Operations
-    // ========================
+// Recipe Operations
+// ========================
     override suspend fun addSavedRecipe(userId: ObjectId, recipe: SavedRecipe) {
-        withContext(Dispatchers.Main) {  // Ensure writes run on the required thread.
+        withContext(Dispatchers.Main) {
             realm.write {
                 val user = query<User>("_id == $0", userId).first().find()
                 if (user == null) {
                     Log.e("MongoRepositoryImpl", "User not found for id: $userId")
                     return@write
                 }
+                // recipe._id was generated in SavedRecipe()'s constructor
                 user.savedRecipes.add(recipe)
-                // Add to recently saved queue: if already 3 items, remove the oldest.
+                // maintain a queue of the last 3 saves
                 if (user.recentlysavedRecipes.size >= 3) {
                     user.recentlysavedRecipes.removeAt(0)
                 }
@@ -182,14 +209,19 @@ class MongoRepositoryImpl(val realm: Realm) : MongoRepository {
             }
         }
     }
-    override suspend fun getSavedRecipesByDate(userId: ObjectId, dateString: String): List<SavedRecipe> {
-        return withContext(Dispatchers.Main) {
-            // Query for the managed User.
+
+        override suspend fun getSavedRecipesByDate(
+            userId: ObjectId,
+            dateString: String
+        ): List<SavedRecipe> = withContext(Dispatchers.Main) {
+
             val user = realm.query<User>("_id == $0", userId).first().find()
-            // If found, convert the realm list to a Kotlin List and filter by saveDateString.
-            user?.savedRecipes?.toList()?.filter { it.saveDate == dateString } ?: emptyList()
+            // Filter by your persisted saveDateString field
+            user?.savedRecipes
+                ?.toList()
+                ?.filter { it.saveDate == dateString }
+                ?: emptyList()
         }
-    }
 
     override suspend fun getRecentlySavedRecipes(userId: ObjectId): List<SavedRecipe> {
         return withContext(Dispatchers.Main) {

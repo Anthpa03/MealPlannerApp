@@ -92,28 +92,95 @@ object RecipeSearch {
     // -------------------------
     // API Methods
     // -------------------------
-    suspend fun searchRecipesByQuery(query: String, number: Int = 15): List<RecipeSummary>? {
+    // New wrapper that holds detailed recipes
+    data class ComplexSearchResultWithInfo(
+        val results: List<RecipeDetails>,
+        val offset: Int,
+        val number: Int,
+        val totalResults: Int
+    )
+
+    /**
+     * Single‐call search that returns full RecipeDetails (incl. ingredients & instructions).
+     */
+    suspend fun searchRecipesByQuery(
+        query: String,
+        number: Int = 15
+    ): List<RecipeDetails>? {
         val baseUrl = "https://$RAPIDAPIHOST/recipes/complexSearch"
-        val urlBuilder = baseUrl.toHttpUrlOrNull()?.newBuilder() ?: return null
-        urlBuilder.addQueryParameter("query", query)
-        urlBuilder.addQueryParameter("number", number.toString())
+        val url = baseUrl.toHttpUrlOrNull()
+            ?.newBuilder()
+            ?.addQueryParameter("query", query)
+            ?.addQueryParameter("number", number.toString())
+            // ← ask Spoonacular to inline all recipe info
+            ?.addQueryParameter("addRecipeInformation", "true")
+            ?.build()
+            ?: return null
+
         val request = Request.Builder()
-            .url(urlBuilder.build())
+            .url(url)
             .addHeader("x-rapidapi-key", apiKey)
             .addHeader("x-rapidapi-host", RAPIDAPIHOST)
             .build()
+
         val response = executeRequestWithBackoff(request) ?: return null
         response.use {
             if (!it.isSuccessful) {
                 println("Error fetching recipes: ${it.code}")
                 return null
             }
-            val responseBody = it.body?.string() ?: return null
-            val wrapper = gson.fromJson(responseBody, ComplexSearchResult::class.java)
+            val body = it.body!!.string()
+            val wrapper = gson.fromJson(body, ComplexSearchResultWithInfo::class.java)
             return wrapper.results
         }
     }
 
+    /**
+     * Convenience to turn the above details into your RecipeDisplayInfo model.
+     */
+    suspend fun searchDisplayInfoByQuery(
+        query: String,
+        number: Int = 15
+    ): List<RecipeDisplayInfo>? {
+        return searchRecipesByQuery(query, number)
+            ?.map { details ->
+                RecipeDisplayInfo(
+                    title    = details.title,
+                    imageUrl = details.image,
+                    cookTime = "${details.readyInMinutes} mins",
+                    recipeId = details.id
+                )
+            }
+    }
+    suspend fun searchRecipesWithInfoAndFilters(
+        query: String,
+        diet: String?,
+        minReadyTime: Int?,
+        maxReadyTime: Int?,
+        number: Int = 15
+    ): List<RecipeDetails>? {
+        val urlBuilder = "https://$RAPIDAPIHOST/recipes/complexSearch".toHttpUrlOrNull()!!.newBuilder()
+            .addQueryParameter("query", query)
+            .addQueryParameter("number", number.toString())
+            .addQueryParameter("addRecipeInformation", "true")
+
+        diet?.takeIf(String::isNotEmpty)?.let { urlBuilder.addQueryParameter("diet", it) }
+        minReadyTime?.let { urlBuilder.addQueryParameter("minReadyTime", it.toString()) }
+        maxReadyTime?.let { urlBuilder.addQueryParameter("maxReadyTime", it.toString()) }
+
+        val request = Request.Builder()
+            .url(urlBuilder.build())
+            .addHeader("x-rapidapi-key", apiKey)
+            .addHeader("x-rapidapi-host", RAPIDAPIHOST)
+            .build()
+
+        val resp = executeRequestWithBackoff(request) ?: return null
+        resp.use {
+            if (!it.isSuccessful) return null
+            val wrapper = gson.fromJson(it.body!!.string(), ComplexSearchResultWithInfo::class.java)
+            return wrapper.results
+        }
+    }
     suspend fun searchRecipesByIngredients(
         ingredients: List<String>,
         number: Int = 50

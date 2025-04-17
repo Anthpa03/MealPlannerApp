@@ -54,7 +54,16 @@ class HomeViewModel @Inject constructor(private val repository: MongoRepository)
             }
         }
     }
-
+    fun changePassword(username: String, newPassword: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val user = repository.getUserByUsername(username)
+            if (user != null) {
+                repository.updatePassword(user._id, newPassword)
+                // Update local cache
+                updatePassword(newPassword)
+            }
+        }
+    }
     fun updateUser() {
         viewModelScope.launch(Dispatchers.IO) {
             if (name.value.isNotEmpty()) {
@@ -66,11 +75,25 @@ class HomeViewModel @Inject constructor(private val repository: MongoRepository)
             }
         }
     }
+    fun changeUsername(oldUsername: String, newUsername: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val user = repository.getUserByUsername(oldUsername)
+            if (user != null) {
+                repository.updateUsername(user._id, newUsername)
+                // Update local cache
+                updateName(newUsername)
+            }
+        }
+    }
 
-    fun deleteUser() {
-        viewModelScope.launch {
-            if (objectId.value.isNotEmpty()) {
-                repository.deleteUser(id = ObjectId(hexString = objectId.value))
+    fun deleteUserByUsername(username: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val user = repository.getUserByUsername(username)
+            if (user != null) {
+                repository.deleteUser(user._id)
+                Log.d("HomeViewModel", "Deleted user '$username'")
+            } else {
+                Log.e("HomeViewModel", "Cannot delete: no user found for '$username'")
             }
         }
     }
@@ -167,51 +190,52 @@ class HomeViewModel @Inject constructor(private val repository: MongoRepository)
         cookTime: String,
         instructions: String,
         image: String,
-        date: String
+        dateString: String            // your already‑formatted "EEE MMM dd …" string
     ) {
         viewModelScope.launch(Dispatchers.IO) {
-            // Retrieve the user using the repository.
+            // 1) Look up the user
             val user = repository.getUserByUsername(username)
             if (user == null) {
                 Log.e("HomeViewModel", "User not found for username: '$username'")
                 return@launch
             }
-            // Create a new SavedRecipe object.
+
+            // 2) Build a new SavedRecipe (its own _id is auto‑generated)
             val savedRecipe = SavedRecipe().apply {
-                this.recipeId = recipeId
-                this.name = name
-                this.cookTime = cookTime
-                this.instructions = instructions
-                this.image = image
-                // Add all ingredients to the RealmList.
+                this.recipeId       = recipeId
+                this.name           = name
+                this.cookTime       = cookTime
+                this.instructions   = instructions
+                this.image          = image
                 this.ingredients.addAll(ingredients)
-                this.saveDate = date
+                this.saveDate= dateString   // unchanged
             }
-            // Delegate saving the recipe to the repository.
+
+            // 3) Delegate to repository
             repository.addSavedRecipe(user._id, savedRecipe)
             Log.d("HomeViewModel", "Saved recipe '$name' for user: ${user.Username}")
         }
     }
-    suspend fun getSavedRecipesForDay(username: String, targetDateString: String): List<SavedRecipe> {
-        val user = repository.getUserByUsername(username)
-        return if (user != null) {
-            repository.getSavedRecipesByDate(user._id, targetDateString)
-        } else {
-            emptyList()
-        }
-    }
-    suspend fun getRecentlySavedRecipesForUser(username: String): List<SavedRecipe> {
-        val user = repository.getUserByUsername(username)
-        return if (user != null) {
-            repository.getRecentlySavedRecipes(user._id)
-        } else {
-            emptyList()
-        }
+
+    /** Load all recipes whose saveDateString exactly matches the target date. */
+    suspend fun getSavedRecipesForDay(
+        username: String,
+        targetDateString: String
+    ): List<SavedRecipe> {
+        val user = repository.getUserByUsername(username) ?: return emptyList()
+        return repository.getSavedRecipesByDate(user._id, targetDateString)
     }
 
-    // New method for username change logic
+    /** Load the 3 most recently saved recipes for the given user. */
+    suspend fun getRecentlySavedRecipesForUser(
+        username: String
+    ): List<SavedRecipe> {
+        val user = repository.getUserByUsername(username) ?: return emptyList()
+        return repository.getRecentlySavedRecipes(user._id)
+    }
+
+    /** Simply re‑expose your repository lookup if you need it elsewhere. */
     suspend fun getUserByUsername(username: String): User? {
         return repository.getUserByUsername(username)
     }
-
 }

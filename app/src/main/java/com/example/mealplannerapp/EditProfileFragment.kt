@@ -64,6 +64,7 @@ class EditProfileFragment : BaseFragment<FragmentEditProfileBinding>(FragmentEdi
                     if (existingUser != null) {
                         Toast.makeText(requireContext(), "That username already exists", Toast.LENGTH_SHORT).show()
                     } else {
+                        homeViewModel.changeUsername(currentUsername, newUsername)
                         SharedPreferencesManager.saveUsername(requireContext(), newUsername)
                         Toast.makeText(requireContext(), "Username successfully changed", Toast.LENGTH_SHORT).show()
                         dialog.dismiss()
@@ -103,6 +104,7 @@ class EditProfileFragment : BaseFragment<FragmentEditProfileBinding>(FragmentEdi
             } else if (newPassword != repeatPassword) {
                 Toast.makeText(requireContext(), "Passwords do not match", Toast.LENGTH_SHORT).show()
             } else {
+                homeViewModel.changePassword(SharedPreferencesManager.getUsername(requireContext()) ?: "", newPassword)
                 SharedPreferencesManager.savePassword(requireContext(), newPassword)
                 Toast.makeText(requireContext(), "Password successfully changed", Toast.LENGTH_SHORT).show()
                 dialog.dismiss()
@@ -125,6 +127,8 @@ class EditProfileFragment : BaseFragment<FragmentEditProfileBinding>(FragmentEdi
         builder.setTitle("Delete Account")
         builder.setMessage("Are you sure you want to delete your account? All your data will be removed.")
         builder.setPositiveButton("Delete") { _, _ ->
+
+            homeViewModel.deleteUserByUsername(SharedPreferencesManager.getUsername(requireContext()) ?: "")
             SharedPreferencesManager.clearUserCredentials(requireContext())
             val intent = Intent(requireContext(), MainActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK

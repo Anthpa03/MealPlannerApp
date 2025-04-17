@@ -65,19 +65,22 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textView_results" />
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/button_add_ingredient"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="84dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="92dp"
         android:text="Add Ingredients"
         android:textColor="@color/white"
         android:textSize="24sp"
         app:backgroundTint="@color/green"
         app:cornerRadius="30dp"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/roundedRectangleView"
+        app:layout_constraintVertical_bias="1.0"
         app:rippleColor="#33AAAAAA"
         app:strokeColor="@color/dullRed"
         app:strokeWidth="1dp" />
