@@ -39,7 +39,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="72dp"
-        android:text="Version 0.6.4-alpha\nCreated by Anthony Parra &amp; Kade Robertson"
+        android:text="Version 2.0.0\nCreated by Anthony Parra &amp; Kade Robertson"
         android:textAlignment="center"
         android:textSize="22sp"
         app:layout_constraintEnd_toEndOf="parent"

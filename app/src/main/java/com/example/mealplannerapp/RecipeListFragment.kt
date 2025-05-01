@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
+import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mealplannerapp.databinding.FragmentRecipeListBinding
@@ -122,43 +123,62 @@ class RecipeListFragment : BaseFragment<FragmentRecipeListBinding>(FragmentRecip
         dietFilter: String?,
         cookTimeFilter: String?
     ) {
-        // parse your time filters
+        // 1) parse your time filters into ints
         val (minTime, maxTime) = when {
             cookTimeFilter?.contains("0-15") == true  -> 0 to 15
             cookTimeFilter?.contains("16-30") == true -> 16 to 30
             cookTimeFilter?.contains("31-60") == true -> 31 to 60
             cookTimeFilter?.contains(">60") == true   -> 61 to Int.MAX_VALUE
-            else                                       -> null to null
+            else                                      -> null to null
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
-            // 1️⃣ show loading
-            binding.progressBar.visibility        = View.VISIBLE
+            // ⚙️ Show loading
+            binding.progressBar.visibility         = View.VISIBLE
             binding.recyclerViewRecipes.visibility = View.GONE
             binding.textViewResults.visibility     = View.GONE
             binding.spinnerSort.visibility         = View.GONE
 
-            // 2️⃣ run on IO
-            val details = withContext(Dispatchers.IO) {
+            // 2) First network call with time filters
+            var details = withContext(Dispatchers.IO) {
                 RecipeSearch.searchRecipesWithInfoAndFilters(
-                    query         = ingredientsQuery,
-                    diet          = dietFilter,
-                    minReadyTime  = minTime,
-                    maxReadyTime  = maxTime
+                    query        = ingredientsQuery,
+                    diet         = dietFilter,
+                    minReadyTime = minTime,
+                    maxReadyTime = maxTime
                 )
             }.orEmpty()
 
-            // 3️⃣ map into your display model
-            val display = details.map {
+            // 3) If *empty* and we did actually supply a range,
+            //    show a toast then broaden by re-calling with no times
+            if (details.isEmpty() && (minTime != null || maxTime != null)) {
+                Toast.makeText(
+                    requireContext(),
+                    "No recipes within $cookTimeFilter; broadening search…",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                details = withContext(Dispatchers.IO) {
+                    RecipeSearch.searchRecipesWithInfoAndFilters(
+                        query        = ingredientsQuery,
+                        diet         = dietFilter,
+                        minReadyTime = null,
+                        maxReadyTime = null
+                    )
+                }.orEmpty()
+            }
+
+            // 4) Map to your RecyclerView model
+            val display = details.map { d ->
                 RecipeSearch.RecipeDisplayInfo(
-                    title    = it.title,
-                    imageUrl = it.image,
-                    cookTime = "${it.readyInMinutes} mins",
-                    recipeId = it.id
+                    title    = d.title,
+                    imageUrl = d.image,
+                    cookTime = "${d.readyInMinutes} mins",
+                    recipeId = d.id
                 )
             }
 
-            // 4️⃣ update adapter
+            // 5) Update adapter
             fullRecipeList = display
             filteredRecipeList.apply {
                 clear()
@@ -166,14 +186,15 @@ class RecipeListFragment : BaseFragment<FragmentRecipeListBinding>(FragmentRecip
             }
             adapter.notifyDataSetChanged()
 
-            // 5️⃣ reveal UI
-            binding.progressBar.visibility        = View.GONE
+            // 6) Reveal
+            binding.progressBar.visibility         = View.GONE
             binding.recyclerViewRecipes.visibility = View.VISIBLE
             binding.textViewResults.visibility     = View.VISIBLE
             binding.spinnerSort.visibility         = View.VISIBLE
-            binding.textViewResults.text           = "Showing ${display.size} results"
+            binding.textViewResults.text           = "Showing ${display.size} recipes"
         }
     }
+
 
     private fun loadDefaultRecipes() {
         fullRecipeList = listOf(

@@ -108,32 +108,48 @@ object RecipeSearch {
         number: Int = 15
     ): List<RecipeDetails>? {
         val baseUrl = "https://$RAPIDAPIHOST/recipes/complexSearch"
-        val url = baseUrl.toHttpUrlOrNull()
-            ?.newBuilder()
-            ?.addQueryParameter("query", query)
-            ?.addQueryParameter("number", number.toString())
-            // ← ask Spoonacular to inline all recipe info
-            ?.addQueryParameter("addRecipeInformation", "true")
-            ?.build()
-            ?: return null
 
-        val request = Request.Builder()
-            .url(url)
+        // 1️⃣ Exact‐phrase pass (only titleMatch)
+        val exactUrl = baseUrl.toHttpUrlOrNull()!!
+            .newBuilder()
+            .addQueryParameter("titleMatch", query)
+            .addQueryParameter("number",    number.toString())
+            .addQueryParameter("addRecipeInformation", "true")
+            .build()
+        val exactRequest = Request.Builder()
+            .url(exactUrl)
             .addHeader("x-rapidapi-key", apiKey)
             .addHeader("x-rapidapi-host", RAPIDAPIHOST)
             .build()
 
-        val response = executeRequestWithBackoff(request) ?: return null
-        response.use {
-            if (!it.isSuccessful) {
-                println("Error fetching recipes: ${it.code}")
-                return null
+        executeRequestWithBackoff(exactRequest)?.use { resp ->
+            if (resp.isSuccessful) {
+                val wrapper = gson.fromJson(resp.body!!.string(), ComplexSearchResultWithInfo::class.java)
+                if (wrapper.results.isNotEmpty()) return wrapper.results
             }
-            val body = it.body!!.string()
-            val wrapper = gson.fromJson(body, ComplexSearchResultWithInfo::class.java)
-            return wrapper.results
         }
+
+        // 2️⃣ Fallback to normal broad search
+        val broadUrl = baseUrl.toHttpUrlOrNull()!!
+            .newBuilder()
+            .addQueryParameter("query", query)
+            .addQueryParameter("number", number.toString())
+            .addQueryParameter("addRecipeInformation", "true")
+            .build()
+        val broadRequest = Request.Builder()
+            .url(broadUrl)
+            .addHeader("x-rapidapi-key", apiKey)
+            .addHeader("x-rapidapi-host", RAPIDAPIHOST)
+            .build()
+
+        return executeRequestWithBackoff(broadRequest)
+            ?.use { resp ->
+                if (!resp.isSuccessful) return null
+                val wrapper = gson.fromJson(resp.body!!.string(), ComplexSearchResultWithInfo::class.java)
+                wrapper.results
+            }
     }
+
 
     /**
      * Convenience to turn the above details into your RecipeDisplayInfo model.
@@ -152,6 +168,8 @@ object RecipeSearch {
                 )
             }
     }
+
+
     suspend fun searchRecipesWithInfoAndFilters(
         query: String,
         diet: String?,
@@ -181,29 +199,7 @@ object RecipeSearch {
             return wrapper.results
         }
     }
-    suspend fun searchRecipesByIngredients(
-        ingredients: List<String>,
-        number: Int = 50
-    ): List<RecipeSummary>? {
-        val baseUrl = "https://$RAPIDAPIHOST/recipes/findByIngredients"
-        val urlBuilder = baseUrl.toHttpUrlOrNull()?.newBuilder() ?: return null
-        urlBuilder.addQueryParameter("ingredients", ingredients.joinToString(","))
-        urlBuilder.addQueryParameter("number", number.toString())
-        val request = Request.Builder()
-            .url(urlBuilder.build())
-            .addHeader("x-rapidapi-key", this.apiKey)
-            .addHeader("x-rapidapi-host", RAPIDAPIHOST)
-            .build()
-        val response = executeRequestWithBackoff(request) ?: return null
-        response.use {
-            if (!it.isSuccessful) {
-                println("Error fetching recipe summaries: ${it.code}")
-                return null
-            }
-            val responseBody = it.body?.string() ?: return null
-            return gson.fromJson(responseBody, Array<RecipeSummary>::class.java).toList()
-        }
-    }
+
 
     suspend fun getRecipeDetails(recipeId: Int): RecipeDetails? {
         val baseUrl = "https://$RAPIDAPIHOST/recipes/$recipeId/information"
@@ -222,16 +218,6 @@ object RecipeSearch {
             val responseBody = it.body?.string() ?: return null
             return gson.fromJson(responseBody, RecipeDetails::class.java)
         }
-    }
-
-    suspend fun getRecipeDisplayInfo(recipeId: Int): RecipeDisplayInfo? {
-        val details = getRecipeDetails(recipeId) ?: return null
-        return RecipeDisplayInfo(
-            title = details.title,
-            imageUrl = details.image,
-            cookTime = "${details.readyInMinutes} mins",
-            recipeId = details.id
-        )
     }
 
     suspend fun searchRecipesByFilters(
